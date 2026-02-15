@@ -1,7 +1,9 @@
 package com.vendorpro.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,16 +13,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseException;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.vendorpro.R;
-import com.vendorpro.model.LoginRequest;
 import com.vendorpro.model.LoginResponse;
 import com.vendorpro.network.AuthService;
 import com.vendorpro.network.RetrofitClient;
@@ -37,8 +35,15 @@ public class LoginActivity extends AppCompatActivity {
     private EditText etPhoneNumber, etOtp;
     private Button btnSendOtp, btnVerifyOtp;
     private ProgressBar progressBar;
+
     private FirebaseAuth mAuth;
+
     private String verificationId;
+    private String normalizedPhone;
+
+    private static final String PREF_AUTH = "auth_prefs";
+    private static final String KEY_VERIFICATION_ID = "verification_id";
+    private static final String KEY_PHONE = "phone";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,130 +62,161 @@ public class LoginActivity extends AppCompatActivity {
         btnVerifyOtp.setOnClickListener(v -> verifyOtp());
     }
 
+    // ================= SEND OTP =================
     private void sendOtp() {
-        String phoneNumber = etPhoneNumber.getText().toString().trim();
-        if (phoneNumber.isEmpty()) {
+        String input = etPhoneNumber.getText().toString().trim();
+
+        if (input.isEmpty()) {
             etPhoneNumber.setError("Phone number required");
             return;
         }
 
+        if (!input.startsWith("+91")) {
+            normalizedPhone = "+91" + input;
+        } else {
+            normalizedPhone = input;
+        }
+
+        saveToPrefs(KEY_PHONE, normalizedPhone);
         progressBar.setVisibility(View.VISIBLE);
+
         PhoneAuthOptions options =
                 PhoneAuthOptions.newBuilder(mAuth)
-                        .setPhoneNumber(phoneNumber)
+                        .setPhoneNumber(normalizedPhone)
                         .setTimeout(60L, TimeUnit.SECONDS)
                         .setActivity(this)
                         .setCallbacks(mCallbacks)
                         .build();
+
         PhoneAuthProvider.verifyPhoneNumber(options);
     }
 
-    private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks =
+    // ================= FIREBASE CALLBACKS =================
+    private final PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks =
             new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
 
                 @Override
                 public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
-                    progressBar.setVisibility(View.GONE);
                     signInWithPhoneAuthCredential(credential);
                 }
 
                 @Override
                 public void onVerificationFailed(@NonNull FirebaseException e) {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(LoginActivity.this, "Verification Failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    Toast.makeText(LoginActivity.this,
+                            "Verification failed: " + e.getMessage(),
+                            Toast.LENGTH_LONG).show();
                 }
 
                 @Override
                 public void onCodeSent(@NonNull String s,
-                                       @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
-                    progressBar.setVisibility(View.GONE);
+                                       @NonNull PhoneAuthProvider.ForceResendingToken token) {
+
                     verificationId = s;
+                    saveToPrefs(KEY_VERIFICATION_ID, s);
+
+                    progressBar.setVisibility(View.GONE);
+
                     etPhoneNumber.setVisibility(View.GONE);
                     btnSendOtp.setVisibility(View.GONE);
                     etOtp.setVisibility(View.VISIBLE);
                     btnVerifyOtp.setVisibility(View.VISIBLE);
+
                     Toast.makeText(LoginActivity.this, "OTP Sent", Toast.LENGTH_SHORT).show();
                 }
             };
 
+    // ================= VERIFY OTP =================
     private void verifyOtp() {
         String code = etOtp.getText().toString().trim();
+
         if (code.isEmpty()) {
             etOtp.setError("OTP required");
             return;
         }
 
+        verificationId = getFromPrefs(KEY_VERIFICATION_ID);
+
+        if (verificationId == null) {
+            Toast.makeText(this, "Session expired. Please resend OTP", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         progressBar.setVisibility(View.VISIBLE);
-        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(verificationId, code);
+
+        PhoneAuthCredential credential =
+                PhoneAuthProvider.getCredential(verificationId, code);
+
         signInWithPhoneAuthCredential(credential);
     }
 
+    // ================= FIREBASE SIGN IN =================
     private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            backendLogin(etPhoneNumber.getText().toString().trim());
-                        } else {
-                            progressBar.setVisibility(View.GONE);
-                            Toast.makeText(LoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
-                        }
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        backendLogin(); // 🔥 IMPORTANT
+                    } else {
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(LoginActivity.this,
+                                "OTP verification failed",
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
-    private void backendLogin(String phoneNumber) {
-        AuthService authService = RetrofitClient.getClient(this).create(AuthService.class);
-        Call<LoginResponse> call = authService.loginVendor(new LoginRequest(phoneNumber));
+    // ================= BACKEND LOGIN (FINAL) =================
+    private void backendLogin() {
 
-        call.enqueue(new Callback<LoginResponse>() {
+        AuthService authService =
+                RetrofitClient.getClient(this).create(AuthService.class);
+
+        authService.firebaseLogin().enqueue(new Callback<LoginResponse>() {
             @Override
-            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                progressBar.setVisibility(View.GONE);
-                if (response.isSuccessful() && response.body() != null) {
-                    TokenManager.getInstance(LoginActivity.this).saveToken(response.body().getToken());
-                    if (response.body().getUser() != null) {
-                        TokenManager.getInstance(LoginActivity.this).saveUserId(response.body().getUser().getId());
-                    }
-                    
-                    // Get FCM Token
-                    com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
-                        .addOnCompleteListener(task -> {
-                            if (!task.isSuccessful()) {
-                                return;
-                            }
-                            String token = task.getResult();
-                            sendFcmToken(token);
-                        });
+            public void onResponse(Call<LoginResponse> call,
+                                   Response<LoginResponse> response) {
 
-                    startActivity(new Intent(LoginActivity.this, DashboardActivity.class));
+                progressBar.setVisibility(View.GONE);
+                Log.d("BACKEND_LOGIN", "Code: " + response.code());
+
+                if (response.isSuccessful() && response.body() != null) {
+
+                    LoginResponse res = response.body();
+
+                    TokenManager.getInstance(LoginActivity.this)
+                            .saveToken(res.getToken());
+
+                    startActivity(new Intent(LoginActivity.this,
+                            DashboardActivity.class));
                     finish();
+
                 } else {
-                    Toast.makeText(LoginActivity.this, "Backend Login Failed", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this,
+                            "Backend login failed",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(LoginActivity.this, "Error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this,
+                        "Network error: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private void sendFcmToken(String token) {
-        AuthService authService = RetrofitClient.getClient(this).create(AuthService.class);
-        authService.updateFcmToken(new com.vendorpro.model.FcmTokenRequest(token)).enqueue(new Callback<Void>() {
-            @Override
-            public void onResponse(Call<Void> call, Response<Void> response) {
-                // Token updated
-            }
+    // ================= SHARED PREF HELPERS =================
+    private void saveToPrefs(String key, String value) {
+        SharedPreferences prefs =
+                getSharedPreferences(PREF_AUTH, MODE_PRIVATE);
+        prefs.edit().putString(key, value).apply();
+    }
 
-            @Override
-            public void onFailure(Call<Void> call, Throwable t) {
-                // Failed to update token
-            }
-        });
+    private String getFromPrefs(String key) {
+        SharedPreferences prefs =
+                getSharedPreferences(PREF_AUTH, MODE_PRIVATE);
+        return prefs.getString(key, null);
     }
 }
