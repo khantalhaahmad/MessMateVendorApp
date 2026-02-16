@@ -2,49 +2,79 @@ package com.vendorpro;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.vendorpro.model.FcmTokenRequest;
+import com.vendorpro.network.AuthService;
+import com.vendorpro.network.RetrofitClient;
 import com.vendorpro.network.TokenManager;
 import com.vendorpro.ui.DashboardActivity;
 import com.vendorpro.ui.LoginActivity;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity {
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if (TokenManager.getInstance(this).getToken() != null) {
-            // Update FCM Token if logged in
-            com.google.firebase.messaging.FirebaseMessaging.getInstance().getToken()
-                .addOnCompleteListener(task -> {
-                    if (!task.isSuccessful()) {
-                        return;
-                    }
-                    String token = task.getResult();
-                    sendFcmToken(token);
-                });
+        String jwtToken = TokenManager.getInstance(this).getToken();
 
+        if (jwtToken != null) {
+
+            // ✅ User already logged in → update FCM token
+            FirebaseMessaging.getInstance().getToken()
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful()) {
+                            Log.e("FCM", "Failed to get FCM token");
+                            return;
+                        }
+                        String fcmToken = task.getResult();
+                        sendFcmToken(fcmToken, jwtToken);
+                    });
+
+            // ✅ Go to Dashboard
             startActivity(new Intent(this, DashboardActivity.class));
             finish();
+
         } else {
+            // ❌ Not logged in → Login screen
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         }
     }
 
-    private void sendFcmToken(String token) {
-        com.vendorpro.network.AuthService authService = com.vendorpro.network.RetrofitClient.getClient(this).create(com.vendorpro.network.AuthService.class);
-        authService.updateFcmToken(new com.vendorpro.model.FcmTokenRequest(token)).enqueue(new retrofit2.Callback<Void>() {
+    // ================= SEND FCM TOKEN =================
+    private void sendFcmToken(String fcmToken, String jwtToken) {
+
+        AuthService authService =
+                RetrofitClient.getClient(this)
+                        .create(AuthService.class);
+
+        authService.updateFcmToken(
+                "Bearer " + jwtToken,
+                new FcmTokenRequest(fcmToken)
+        ).enqueue(new Callback<Void>() {
+
             @Override
-            public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
-                // Token updated
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d("FCM", "FCM token updated successfully");
+                } else {
+                    Log.e("FCM", "FCM update failed. Code: " + response.code());
+                }
             }
 
             @Override
-            public void onFailure(retrofit2.Call<Void> call, Throwable t) {
-                // Failed to update token
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e("FCM", "FCM update error", t);
             }
         });
     }

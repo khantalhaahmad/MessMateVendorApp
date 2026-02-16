@@ -8,8 +8,9 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
-import androidx.core.app.NotificationCompat;
 import android.util.Log;
+
+import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -29,10 +30,14 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
         if (remoteMessage.getNotification() != null) {
-            sendNotification(remoteMessage.getNotification().getTitle(), remoteMessage.getNotification().getBody());
+            sendNotification(
+                    remoteMessage.getNotification().getTitle(),
+                    remoteMessage.getNotification().getBody()
+            );
         } else if (remoteMessage.getData().size() > 0) {
             String title = remoteMessage.getData().get("title");
             String body = remoteMessage.getData().get("body");
@@ -41,41 +46,65 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     }
 
     @Override
-    public void onNewToken(String token) {
-        Log.d(TAG, "Refreshed token: " + token);
-        sendRegistrationToServer(token);
+    public void onNewToken(String fcmToken) {
+        Log.d(TAG, "Refreshed FCM token: " + fcmToken);
+        sendRegistrationToServer(fcmToken);
     }
 
-    private void sendRegistrationToServer(String token) {
-        String authToken = TokenManager.getInstance(this).getToken();
-        if (authToken != null) {
-            AuthService authService = RetrofitClient.getClient(this).create(AuthService.class);
-            authService.updateFcmToken(new FcmTokenRequest(token)).enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
-                    if (response.isSuccessful()) {
-                        Log.d(TAG, "FCM Token updated successfully");
-                    } else {
-                        Log.e(TAG, "Failed to update FCM Token");
-                    }
-                }
+    // ================= SEND FCM TOKEN TO BACKEND =================
+    private void sendRegistrationToServer(String fcmToken) {
 
-                @Override
-                public void onFailure(Call<Void> call, Throwable t) {
-                    Log.e(TAG, "Error updating FCM Token", t);
-                }
-            });
+        String jwtToken = TokenManager
+                .getInstance(this)
+                .getToken();
+
+        if (jwtToken == null) {
+            Log.w(TAG, "JWT token not found, skipping FCM update");
+            return;
         }
+
+        AuthService authService =
+                RetrofitClient.getClient(this)
+                        .create(AuthService.class);
+
+        authService.updateFcmToken(
+                "Bearer " + jwtToken,
+                new FcmTokenRequest(fcmToken)
+        ).enqueue(new Callback<Void>() {
+
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    Log.d(TAG, "FCM token updated successfully");
+                } else {
+                    Log.e(TAG, "Failed to update FCM token. Code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Log.e(TAG, "Error updating FCM token", t);
+            }
+        });
     }
 
+    // ================= SHOW NOTIFICATION =================
     private void sendNotification(String title, String messageBody) {
+
         Intent intent = new Intent(this, OrdersActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
-                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         String channelId = "OrderCallbacks";
-        Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        Uri defaultSoundUri =
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this, channelId)
                         .setSmallIcon(R.mipmap.ic_launcher)
@@ -89,9 +118,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(channelId,
-                    "Orders",
-                    NotificationManager.IMPORTANCE_DEFAULT);
+            NotificationChannel channel =
+                    new NotificationChannel(
+                            channelId,
+                            "Orders",
+                            NotificationManager.IMPORTANCE_DEFAULT
+                    );
             notificationManager.createNotificationChannel(channel);
         }
 

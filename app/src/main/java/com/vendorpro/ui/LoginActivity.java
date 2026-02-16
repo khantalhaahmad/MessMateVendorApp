@@ -23,6 +23,7 @@ import com.vendorpro.model.LoginResponse;
 import com.vendorpro.network.AuthService;
 import com.vendorpro.network.RetrofitClient;
 import com.vendorpro.network.TokenManager;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.concurrent.TimeUnit;
 
@@ -164,46 +165,82 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-
-    // ================= BACKEND LOGIN (FINAL) =================
+    // ================= BACKEND LOGIN (FINAL - FIXED) =================
     private void backendLogin() {
 
-        AuthService authService =
-                RetrofitClient.getClient(this).create(AuthService.class);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-        authService.firebaseLogin().enqueue(new Callback<LoginResponse>() {
-            @Override
-            public void onResponse(Call<LoginResponse> call,
-                                   Response<LoginResponse> response) {
+        if (user == null) {
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(this, "Firebase user not found", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        // 🔥 GET FIREBASE ID TOKEN
+        user.getIdToken(true).addOnCompleteListener(task -> {
+
+            if (!task.isSuccessful()) {
                 progressBar.setVisibility(View.GONE);
-                Log.d("BACKEND_LOGIN", "Code: " + response.code());
-
-                if (response.isSuccessful() && response.body() != null) {
-
-                    LoginResponse res = response.body();
-
-                    TokenManager.getInstance(LoginActivity.this)
-                            .saveToken(res.getToken());
-
-                    startActivity(new Intent(LoginActivity.this,
-                            DashboardActivity.class));
-                    finish();
-
-                } else {
-                    Toast.makeText(LoginActivity.this,
-                            "Backend login failed",
-                            Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<LoginResponse> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                Toast.makeText(LoginActivity.this,
-                        "Network error: " + t.getMessage(),
+                Toast.makeText(this,
+                        "Failed to get Firebase token",
                         Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            String firebaseToken = task.getResult().getToken();
+
+            Log.d("FIREBASE_TOKEN", firebaseToken);
+
+            AuthService authService =
+                    RetrofitClient.getClient(this).create(AuthService.class);
+
+            // 🔥 SEND TOKEN TO BACKEND
+            authService.firebaseLogin("Bearer " + firebaseToken)
+                    .enqueue(new Callback<LoginResponse>() {
+
+                        @Override
+                        public void onResponse(Call<LoginResponse> call,
+                                               Response<LoginResponse> response) {
+
+                            progressBar.setVisibility(View.GONE);
+                            Log.d("BACKEND_LOGIN", "Code: " + response.code());
+
+                            if (response.isSuccessful() && response.body() != null) {
+
+                                LoginResponse res = response.body();
+
+                                // ✅ SAVE JWT TOKEN
+                                TokenManager.getInstance(LoginActivity.this)
+                                        .saveToken(res.getToken());
+
+                                // (Optional but recommended)
+                                if (res.getRefreshToken() != null) {
+                                    TokenManager.getInstance(LoginActivity.this)
+                                            .saveRefreshToken(res.getRefreshToken());
+                                }
+
+                                // ✅ GO TO DASHBOARD
+                                startActivity(new Intent(
+                                        LoginActivity.this,
+                                        DashboardActivity.class
+                                ));
+                                finish();
+
+                            } else {
+                                Toast.makeText(LoginActivity.this,
+                                        "Backend login failed",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<LoginResponse> call, Throwable t) {
+                            progressBar.setVisibility(View.GONE);
+                            Toast.makeText(LoginActivity.this,
+                                    "Network error: " + t.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
         });
     }
 
