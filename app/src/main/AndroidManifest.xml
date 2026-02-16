@@ -2,7 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- OTP + Backend ke liye mandatory -->
+    <!-- Network / Backend -->
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
@@ -17,7 +17,7 @@
         android:theme="@style/Theme.VendorPro"
         tools:targetApi="31">
 
-        <!-- LOGIN / OTP SCREEN -->
+        <!-- 🔹 LOGIN (Launcher) -->
         <activity
             android:name=".ui.LoginActivity"
             android:exported="true">
@@ -27,12 +27,37 @@
             </intent-filter>
         </activity>
 
-        <!-- DASHBOARD (OTP ke baad) -->
+        <!-- 🔹 DASHBOARD -->
         <activity
             android:name=".ui.DashboardActivity"
             android:exported="false" />
 
-        <!-- Firebase FCM -->
+        <!-- 🔹 MENU (🔥 THIS WAS MISSING) -->
+        <activity
+            android:name=".ui.MenuActivity"
+            android:exported="false" />
+
+        <!-- 🔹 ORDERS -->
+        <activity
+            android:name=".ui.OrdersActivity"
+            android:exported="false" />
+
+        <!-- 🔹 ORDER DETAIL -->
+        <activity
+            android:name=".ui.OrderDetailActivity"
+            android:exported="false" />
+
+        <!-- 🔹 ADD / EDIT MENU ITEM -->
+        <activity
+            android:name=".ui.AddEditMenuItemActivity"
+            android:exported="false" />
+
+        <!-- 🔹 MAIN (Optional splash / redirect activity) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
+
+        <!-- 🔹 Firebase FCM Service -->
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">
