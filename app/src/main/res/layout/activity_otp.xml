@@ -12,7 +12,7 @@
         android:id="@+id/txtTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="Verify OTP"
         android:textSize="26sp"
         android:textStyle="bold"
         android:textColor="#000"
@@ -24,38 +24,38 @@
         android:id="@+id/txtSubtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Enter your mobile number to continue"
+        android:text="Enter the 6-digit code sent to your number"
         android:textSize="14sp"
         android:textColor="#666"
         app:layout_constraintTop_toBottomOf="@id/txtTitle"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="6dp" />
 
-    <!-- PHONE INPUT -->
+    <!-- OTP INPUT -->
     <EditText
-        android:id="@+id/etPhoneNumber"
+        android:id="@+id/etOtp"
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_marginTop="32dp"
-        android:hint="10-digit mobile number"
-        android:inputType="phone"
-        android:maxLength="10"
+        android:hint="Enter OTP"
+        android:inputType="number"
+        android:maxLength="6"
         android:padding="16dp"
         android:background="@drawable/bg_input"
         app:layout_constraintTop_toBottomOf="@id/txtSubtitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- SEND OTP BUTTON -->
+    <!-- VERIFY BUTTON -->
     <Button
-        android:id="@+id/btnSendOtp"
+        android:id="@+id/btnVerifyOtp"
         android:layout_width="0dp"
         android:layout_height="52dp"
-        android:text="Send OTP"
+        android:text="Verify &amp; Continue"
         android:textAllCaps="false"
         android:backgroundTint="@color/purple_700"
         android:textColor="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/etPhoneNumber"
+        app:layout_constraintTop_toBottomOf="@id/etOtp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />
@@ -66,7 +66,7 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/btnSendOtp"
+        app:layout_constraintTop_toBottomOf="@id/btnVerifyOtp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />
