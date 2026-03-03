@@ -32,7 +32,8 @@ public class SplashActivity extends AppCompatActivity {
                     if (destination == SplashViewModel.Destination.DASHBOARD) {
                         startActivity(new Intent(this, DashboardActivity.class));
                     } else {
-                        startActivity(new Intent(this, LoginActivity.class));
+                        // 👇 CHANGE HERE
+                        startActivity(new Intent(this, AuthLandingActivity.class));
                     }
                     finish();
                 });

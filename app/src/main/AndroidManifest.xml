@@ -28,6 +28,11 @@
             </intent-filter>
         </activity>
 
+        <!-- 🟣 AUTH LANDING (ZOMATO-STYLE) -->
+        <activity
+            android:name=".ui.AuthLandingActivity"
+            android:exported="false" />
+
         <!-- 📱 LOGIN – PHONE NUMBER -->
         <activity
             android:name=".ui.LoginActivity"
