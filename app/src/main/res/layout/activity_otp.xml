@@ -4,47 +4,107 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
-    android:background="@color/white">
+    android:background="@android:color/white"
+    android:padding="24dp">
 
     <!-- TITLE -->
     <TextView
         android:id="@+id/txtTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Verify OTP"
-        android:textSize="26sp"
+        android:text="Verify details"
+        android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="#000"
+        android:textColor="#1C1C1C"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <!-- SUBTITLE -->
     <TextView
         android:id="@+id/txtSubtitle"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Enter the 6-digit code sent to your number"
+        android:text="We have sent an OTP to your number"
         android:textSize="14sp"
-        android:textColor="#666"
+        android:textColor="#6E6E6E"
+        android:layout_marginTop="8dp"
         app:layout_constraintTop_toBottomOf="@id/txtTitle"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="6dp" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- OTP INPUT -->
+    <!-- OTP BOX CONTAINER -->
+    <LinearLayout
+        android:id="@+id/otpContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/txtSubtitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- 6 BOXES -->
+        <EditText
+            style="@style/OtpBoxStyle"
+            android:id="@+id/etOtp1"/>
+
+        <EditText
+            style="@style/OtpBoxStyle"
+            android:id="@+id/etOtp2"/>
+
+        <EditText
+            style="@style/OtpBoxStyle"
+            android:id="@+id/etOtp3"/>
+
+        <EditText
+            style="@style/OtpBoxStyle"
+            android:id="@+id/etOtp4"/>
+
+        <EditText
+            style="@style/OtpBoxStyle"
+            android:id="@+id/etOtp5"/>
+
+        <EditText
+            style="@style/OtpBoxStyle"
+            android:id="@+id/etOtp6"/>
+
+    </LinearLayout>
+
+    <!-- HIDDEN FULL OTP FIELD (logic ke liye) -->
     <EditText
         android:id="@+id/etOtp"
         android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginTop="32dp"
-        android:hint="Enter OTP"
+        android:layout_height="0dp"
+        android:visibility="gone"
         android:inputType="number"
-        android:maxLength="6"
-        android:padding="16dp"
-        android:background="@drawable/bg_input"
-        app:layout_constraintTop_toBottomOf="@id/txtSubtitle"
+        android:maxLength="6"/>
+
+    <!-- TIMER -->
+    <TextView
+        android:id="@+id/txtTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="00:30"
+        android:textSize="18sp"
+        android:textColor="#000"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@id/otpContainer"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- RESEND -->
+    <TextView
+        android:id="@+id/txtResend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Didn’t receive the code? Resend now"
+        android:textSize="14sp"
+        android:textColor="#9E9E9E"
+        android:layout_marginTop="12dp"
+        app:layout_constraintTop_toBottomOf="@id/txtTimer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- VERIFY BUTTON -->
     <Button
@@ -53,12 +113,12 @@
         android:layout_height="52dp"
         android:text="Verify &amp; Continue"
         android:textAllCaps="false"
-        android:backgroundTint="@color/purple_700"
         android:textColor="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/etOtp"
+        android:background="@drawable/bg_button_zomato_disabled"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toBottomOf="@id/txtResend"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- LOADER -->
     <ProgressBar
@@ -66,9 +126,9 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:visibility="gone"
+        android:layout_marginTop="20dp"
         app:layout_constraintTop_toBottomOf="@id/btnVerifyOtp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

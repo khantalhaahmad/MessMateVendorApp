@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Shake Left Right -->
+    <translate
+        android:fromXDelta="-15"
+        android:toXDelta="15"
+        android:duration="50"
+        android:repeatCount="5"
+        android:repeatMode="reverse"/>
+
+    <!-- Small fall down effect -->
+    <translate
+        android:fromYDelta="0"
+        android:toYDelta="15"
+        android:startOffset="300"
+        android:duration="150"
+        android:fillAfter="false"/>
+
+</set>
