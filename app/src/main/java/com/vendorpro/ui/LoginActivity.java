@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
@@ -15,14 +17,19 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthOptions;
 import com.google.firebase.auth.PhoneAuthProvider;
 import com.vendorpro.R;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class LoginActivity extends AppCompatActivity {
@@ -32,17 +39,21 @@ public class LoginActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private ImageView imgHero;
 
+    private ViewPager2 viewPager;
+    private TabLayout tabIndicator;
+
     private FirebaseAuth mAuth;
 
     private static final String PREF_AUTH = "auth_prefs";
     private static final String KEY_VERIFICATION_ID = "verification_id";
+
+    private Handler sliderHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_login);
-
         makeStatusBarTransparent();
 
         mAuth = FirebaseAuth.getInstance();
@@ -52,15 +63,19 @@ public class LoginActivity extends AppCompatActivity {
         btnSendOtp = findViewById(R.id.btnSendOtp);
         progressBar = findViewById(R.id.progressBar);
 
+        viewPager = findViewById(R.id.viewPager);
+        tabIndicator = findViewById(R.id.tabIndicator);
+
         btnSendOtp.setEnabled(false);
 
         loadHeroImage();
         setupPhoneWatcher();
+        setupSlider();
 
         btnSendOtp.setOnClickListener(v -> sendOtp());
     }
 
-    // ================= STATUS BAR CLEAN =================
+    // ================= STATUS BAR =================
     private void makeStatusBarTransparent() {
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         getWindow().getDecorView().setSystemUiVisibility(
@@ -69,7 +84,7 @@ public class LoginActivity extends AppCompatActivity {
         );
     }
 
-    // ================= LOAD HERO IMAGE =================
+    // ================= HERO IMAGE =================
     private void loadHeroImage() {
         Glide.with(this)
                 .load("https://images.unsplash.com/photo-1555396273-367ea4eb4db5")
@@ -77,12 +92,41 @@ public class LoginActivity extends AppCompatActivity {
                 .into(imgHero);
     }
 
+    // ================= SLIDER SETUP =================
+    private void setupSlider() {
+
+        List<String> sliderTexts = Arrays.asList(
+                "Increase your online orders",
+                "Reach customers far away from you",
+                "Access powerful vendor tools",
+                "Grow your business with VendorPro"
+        );
+
+        SliderAdapter adapter = new SliderAdapter(sliderTexts);
+        viewPager.setAdapter(adapter);
+
+        new TabLayoutMediator(tabIndicator, viewPager,
+                (tab, position) -> {}).attach();
+
+        sliderHandler = new Handler(Looper.getMainLooper());
+
+        Runnable sliderRunnable = new Runnable() {
+            @Override
+            public void run() {
+                int nextItem = (viewPager.getCurrentItem() + 1) % sliderTexts.size();
+                viewPager.setCurrentItem(nextItem, true);
+                sliderHandler.postDelayed(this, 3000);
+            }
+        };
+
+        sliderHandler.postDelayed(sliderRunnable, 3000);
+    }
+
     // ================= PHONE WATCHER =================
     private void setupPhoneWatcher() {
         etPhoneNumber.addTextChangedListener(new TextWatcher() {
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -96,8 +140,7 @@ public class LoginActivity extends AppCompatActivity {
                 );
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 
@@ -126,7 +169,6 @@ public class LoginActivity extends AppCompatActivity {
         PhoneAuthProvider.verifyPhoneNumber(options);
     }
 
-    // ================= LOADING STATE =================
     private void showLoading(boolean state) {
         progressBar.setVisibility(state ? View.VISIBLE : View.GONE);
         btnSendOtp.setEnabled(!state);
@@ -138,14 +180,11 @@ public class LoginActivity extends AppCompatActivity {
 
                 @Override
                 public void onVerificationCompleted(
-                        @NonNull com.google.firebase.auth.PhoneAuthCredential credential) {
-                    // Optional: Auto sign-in handle here
-                }
+                        @NonNull com.google.firebase.auth.PhoneAuthCredential credential) {}
 
                 @Override
                 public void onVerificationFailed(@NonNull FirebaseException e) {
                     showLoading(false);
-
                     Toast.makeText(LoginActivity.this,
                             e.getMessage(), Toast.LENGTH_LONG).show();
                 }

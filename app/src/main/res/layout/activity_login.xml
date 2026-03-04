@@ -1,20 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 🔥 HERO IMAGE -->
-    <ImageView
-        android:id="@+id/imgHero"
+    <!-- 🔥 HERO SECTION CONTAINER -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop" />
+        android:layout_height="match_parent">
 
-    <!-- 🔥 DARK OVERLAY -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#66000000" />
+        <!-- HERO IMAGE -->
+        <ImageView
+            android:id="@+id/imgHero"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <!-- DARK OVERLAY -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#66000000" />
+
+        <!-- 🔥 TEXT SLIDER -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="24dp" />
+
+        <!-- 🔥 DOT INDICATOR -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="180dp"
+            app:tabIndicatorHeight="0dp"
+            app:tabIndicator="@null"
+            app:tabSelectedTextColor="@android:color/white" />
+
+    </FrameLayout>
+
 
     <!-- 🔥 BOTTOM SHEET -->
     <LinearLayout
@@ -25,7 +52,7 @@
         android:padding="28dp"
         android:background="@drawable/bg_bottom_sheet">
 
-        <!-- 🔥 Title + Logo Row -->
+        <!-- Title + Logo -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,7 +60,6 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="8dp">
 
-            <!-- Title -->
             <TextView
                 android:id="@+id/txtTitle"
                 android:layout_width="0dp"
@@ -44,7 +70,6 @@
                 android:textStyle="bold"
                 android:textColor="#1C1C1C" />
 
-            <!-- Logo (Right Side) -->
             <ImageView
                 android:layout_width="74dp"
                 android:layout_height="74dp"
