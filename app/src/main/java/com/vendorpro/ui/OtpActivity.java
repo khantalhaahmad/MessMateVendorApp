@@ -201,7 +201,11 @@ public class OtpActivity extends AppCompatActivity {
     private void backendLogin() {
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
+        if (user == null) {
+            showLoading(false);
+            Toast.makeText(this, "Authentication failed", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         user.getIdToken(true).addOnSuccessListener(result -> {
 
@@ -221,14 +225,33 @@ public class OtpActivity extends AppCompatActivity {
 
                             if (response.isSuccessful() && response.body() != null) {
 
-                                TokenManager.getInstance(OtpActivity.this)
-                                        .saveToken(response.body().getToken());
+                                TokenManager tokenManager =
+                                        TokenManager.getInstance(OtpActivity.this);
+
+                                // ✅ Save JWT token
+                                tokenManager.saveToken(response.body().getToken());
+
+                                // ✅ Save Refresh Token (optional but recommended)
+                                if (response.body().getRefreshToken() != null) {
+                                    tokenManager.saveRefreshToken(response.body().getRefreshToken());
+                                }
+
+                                // 🔥 IMPORTANT FIX → Save MongoDB userId from backend
+                                if (response.body().getUser() != null) {
+                                    String userId = response.body().getUser().getId();
+                                    tokenManager.saveUserId(userId);
+                                }
 
                                 startActivity(new Intent(
                                         OtpActivity.this,
                                         DashboardActivity.class
                                 ));
                                 finish();
+
+                            } else {
+                                Toast.makeText(OtpActivity.this,
+                                        "Login failed. Try again.",
+                                        Toast.LENGTH_SHORT).show();
                             }
                         }
 
@@ -238,6 +261,10 @@ public class OtpActivity extends AppCompatActivity {
                             premiumError();
                         }
                     });
+
+        }).addOnFailureListener(e -> {
+            showLoading(false);
+            Toast.makeText(this, "Token error", Toast.LENGTH_SHORT).show();
         });
     }
 
