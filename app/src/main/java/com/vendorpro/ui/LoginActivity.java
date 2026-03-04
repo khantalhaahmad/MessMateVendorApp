@@ -20,8 +20,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.PhoneAuthOptions;
@@ -40,7 +38,6 @@ public class LoginActivity extends AppCompatActivity {
     private ImageView imgHero;
 
     private ViewPager2 viewPager;
-    private TabLayout tabIndicator;
 
     private FirebaseAuth mAuth;
 
@@ -48,6 +45,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String KEY_VERIFICATION_ID = "verification_id";
 
     private Handler sliderHandler;
+    private Runnable sliderRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +62,6 @@ public class LoginActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
 
         viewPager = findViewById(R.id.viewPager);
-        tabIndicator = findViewById(R.id.tabIndicator);
 
         btnSendOtp.setEnabled(false);
 
@@ -75,7 +72,6 @@ public class LoginActivity extends AppCompatActivity {
         btnSendOtp.setOnClickListener(v -> sendOtp());
     }
 
-    // ================= STATUS BAR =================
     private void makeStatusBarTransparent() {
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         getWindow().getDecorView().setSystemUiVisibility(
@@ -84,7 +80,6 @@ public class LoginActivity extends AppCompatActivity {
         );
     }
 
-    // ================= HERO IMAGE =================
     private void loadHeroImage() {
         Glide.with(this)
                 .load("https://images.unsplash.com/photo-1555396273-367ea4eb4db5")
@@ -92,7 +87,7 @@ public class LoginActivity extends AppCompatActivity {
                 .into(imgHero);
     }
 
-    // ================= SLIDER SETUP =================
+    // ================= SLIDER =================
     private void setupSlider() {
 
         List<String> sliderTexts = Arrays.asList(
@@ -105,12 +100,9 @@ public class LoginActivity extends AppCompatActivity {
         SliderAdapter adapter = new SliderAdapter(sliderTexts);
         viewPager.setAdapter(adapter);
 
-        new TabLayoutMediator(tabIndicator, viewPager,
-                (tab, position) -> {}).attach();
-
         sliderHandler = new Handler(Looper.getMainLooper());
 
-        Runnable sliderRunnable = new Runnable() {
+        sliderRunnable = new Runnable() {
             @Override
             public void run() {
                 int nextItem = (viewPager.getCurrentItem() + 1) % sliderTexts.size();
@@ -122,10 +114,8 @@ public class LoginActivity extends AppCompatActivity {
         sliderHandler.postDelayed(sliderRunnable, 3000);
     }
 
-    // ================= PHONE WATCHER =================
     private void setupPhoneWatcher() {
         etPhoneNumber.addTextChangedListener(new TextWatcher() {
-
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
             @Override
@@ -144,7 +134,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // ================= SEND OTP =================
     private void sendOtp() {
 
         String input = etPhoneNumber.getText().toString().trim();
@@ -174,7 +163,6 @@ public class LoginActivity extends AppCompatActivity {
         btnSendOtp.setEnabled(!state);
     }
 
-    // ================= FIREBASE CALLBACKS =================
     private final PhoneAuthProvider.OnVerificationStateChangedCallbacks callbacks =
             new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
 
