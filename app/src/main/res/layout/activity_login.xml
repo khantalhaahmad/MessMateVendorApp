@@ -25,15 +25,32 @@
         android:padding="28dp"
         android:background="@drawable/bg_bottom_sheet">
 
-        <!-- Title -->
-        <TextView
-            android:id="@+id/txtTitle"
-            android:layout_width="wrap_content"
+        <!-- 🔥 Title + Logo Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Get Started"
-            android:textSize="26sp"
-            android:textStyle="bold"
-            android:textColor="#1C1C1C" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <!-- Title -->
+            <TextView
+                android:id="@+id/txtTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Get Started"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="#1C1C1C" />
+
+            <!-- Logo (Right Side) -->
+            <ImageView
+                android:layout_width="74dp"
+                android:layout_height="74dp"
+                android:src="@drawable/messmate_logo"
+                android:scaleType="fitCenter"/>
+        </LinearLayout>
 
         <!-- Subtitle -->
         <TextView
@@ -43,10 +60,9 @@
             android:text="Enter your mobile number to login"
             android:textSize="14sp"
             android:textColor="#6E6E6E"
-            android:layout_marginTop="6dp"
             android:layout_marginBottom="20dp" />
 
-        <!-- Phone Input Container (with +91 like Swiggy) -->
+        <!-- Phone Input -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="56dp"

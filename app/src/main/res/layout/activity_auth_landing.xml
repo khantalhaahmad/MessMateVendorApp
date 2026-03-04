@@ -1,78 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/authLandingRoot"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:layout_height="match_parent">
 
     <!-- Background Image -->
     <ImageView
-        android:id="@+id/ivBackground"
+        android:id="@+id/bgImage"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
-        android:background="@color/purple_700" />
+        android:background="@android:color/black" />
 
-    <!-- Dark Overlay -->
+    <!-- Dark Gradient Overlay -->
     <View
-        android:id="@+id/overlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#80000000" />
+        android:background="#66000000"/>
 
-    <!-- Bottom Content -->
+    <!-- White Rounded Bottom Section -->
     <LinearLayout
-        android:id="@+id/contentLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="24dp"
+        android:background="@drawable/bg_bottom_white"
+        android:elevation="10dp">
 
-        <!-- App Title -->
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+        <!-- 🔥 Title + Logo Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="VendorPro"
-            android:textColor="@android:color/white"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <!-- Title (Left Side) -->
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="VendorPro"
+                android:textColor="@android:color/black"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"/>
+
+            <!-- Logo (Right Side) -->
+            <ImageView
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/messmate_logo"
+                android:scaleType="fitCenter"/>
+        </LinearLayout>
+
 
         <!-- Subtitle -->
         <TextView
-            android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Manage and grow your mess business"
-            android:textColor="#E0E0E0"
-            android:textSize="16sp"
-            android:layout_marginBottom="24dp" />
+            android:textColor="#555555"
+            android:textSize="15sp"
+            android:layout_marginBottom="24dp"/>
 
         <!-- Login Button -->
         <Button
             android:id="@+id/btnLogin"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="58dp"
             android:text="Login"
             android:textAllCaps="false"
-            android:textSize="16sp"
             android:textColor="@android:color/white"
-            android:backgroundTint="@color/purple_500" />
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.03"
+            android:fontFamily="sans-serif-medium"
+            android:background="@drawable/bg_button_blue_round"
+            android:layout_marginBottom="18dp"/>
 
-        <!-- Partner Button -->
         <Button
             android:id="@+id/btnPartner"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="16dp"
-            android:text="Partner with MessMate"
+            android:layout_height="58dp"
+            android:text="Partner with VendorPro"
             android:textAllCaps="false"
-            android:textSize="16sp"
-            android:textColor="@color/purple_500"
-            android:backgroundTint="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.02"
+            android:fontFamily="sans-serif-medium"
+            android:background="@drawable/bg_button_outline_round"/>
 
     </LinearLayout>
 
-</RelativeLayout>
+</FrameLayout>
