@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- 🌐 Network / Backend -->
-    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <!-- 🔔 Required for OTP shake vibration -->
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:allowBackup="true"
@@ -20,64 +20,78 @@
         android:theme="@style/Theme.VendorPro"
         tools:targetApi="31">
 
-        <!-- 🚀 SPLASH (LAUNCHER ENTRY POINT) -->
+        <!-- 🚀 SPLASH (APP ENTRY POINT) -->
         <activity
             android:name=".ui.SplashActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.NoActionBar">
+
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
         </activity>
 
         <!-- 🟣 AUTH LANDING -->
         <activity
             android:name=".ui.AuthLandingActivity"
-            android:exported="false" />
+            android:exported="false"/>
 
         <!-- 📱 LOGIN -->
         <activity
             android:name=".ui.LoginActivity"
-            android:exported="false" />
+            android:exported="false"/>
 
         <!-- 🔐 OTP VERIFY -->
         <activity
             android:name=".ui.OtpActivity"
-            android:exported="false" />
+            android:exported="false"/>
 
         <!-- 🏠 DASHBOARD -->
         <activity
             android:name=".ui.DashboardActivity"
-            android:exported="false" />
+            android:exported="false"/>
 
         <!-- 🍽 MENU -->
         <activity
             android:name=".ui.MenuActivity"
-            android:exported="false" />
+            android:exported="false"/>
 
         <!-- 📦 ORDERS -->
         <activity
             android:name=".ui.OrdersActivity"
-            android:exported="false" />
+            android:exported="false"/>
 
         <!-- 📄 ORDER DETAIL -->
         <activity
             android:name=".ui.OrderDetailActivity"
-            android:exported="false" />
+            android:exported="false"/>
 
         <!-- ➕ ADD / ✏️ EDIT MENU ITEM -->
         <activity
             android:name=".ui.AddEditMenuItemActivity"
-            android:exported="false" />
+            android:exported="false"/>
+
+        <!-- 📊 ANALYTICS -->
+        <activity
+            android:name=".ui.AnalyticsActivity"
+            android:exported="false"/>
+
+        <!-- 💰 PAYOUTS -->
+        <activity
+            android:name=".ui.PayoutsActivity"
+            android:exported="false"/>
 
         <!-- 🔔 FIREBASE FCM SERVICE -->
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">
+
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
+
         </service>
 
     </application>

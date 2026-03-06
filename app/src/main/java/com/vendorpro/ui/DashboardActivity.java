@@ -1,15 +1,15 @@
 package com.vendorpro.ui;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.github.mikephil.charting.charts.BarChart;
@@ -20,6 +20,7 @@ import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.vendorpro.R;
 import com.vendorpro.model.DashboardStats;
+import com.vendorpro.model.QuickAction;
 import com.vendorpro.network.TokenManager;
 import com.vendorpro.viewmodel.DashboardViewModel;
 
@@ -30,9 +31,18 @@ import java.util.Locale;
 public class DashboardActivity extends BaseActivity {
 
     private DashboardViewModel dashboardViewModel;
+
     private TextView tvTotalRevenue, tvTotalOrders, tvActiveCustomers, tvAverageRating;
+    private TextView tvRestaurantStatus;
+    private View btnToggleStatus;
+
+    private ProgressBar progressBar;
     private BarChart barChart;
     private SwipeRefreshLayout swipeRefreshLayout;
+
+    private RecyclerView rvQuickActions;
+
+    private boolean isRestaurantOpen = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,100 +50,185 @@ public class DashboardActivity extends BaseActivity {
         setContentView(R.layout.activity_dashboard);
 
         initializeViews();
-        setupChart(null); // Initial setup
 
         dashboardViewModel = new ViewModelProvider(this).get(DashboardViewModel.class);
+
+        setupQuickActions();
+
         loadDashboardData();
 
         swipeRefreshLayout.setOnRefreshListener(this::loadDashboardData);
     }
 
     private void initializeViews() {
+
         tvTotalRevenue = findViewById(R.id.tvTotalRevenue);
         tvTotalOrders = findViewById(R.id.tvTotalOrders);
         tvActiveCustomers = findViewById(R.id.tvActiveCustomers);
         tvAverageRating = findViewById(R.id.tvAverageRating);
+
+        tvRestaurantStatus = findViewById(R.id.tvRestaurantStatus);
+        btnToggleStatus = findViewById(R.id.btnToggleStatus);
+
+        progressBar = findViewById(R.id.progressBar);
+
         barChart = findViewById(R.id.barChart);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
 
-        findViewById(R.id.btnViewOrders).setOnClickListener(v -> {
-            startActivity(new android.content.Intent(this, OrdersActivity.class));
-        });
+        rvQuickActions = findViewById(R.id.rvQuickActions);
 
-        findViewById(R.id.btnManageMenu).setOnClickListener(v -> {
-            startActivity(new android.content.Intent(this, MenuActivity.class));
-        });
+        btnToggleStatus.setOnClickListener(v -> toggleRestaurantStatus());
 
-        // Customize Chart
+        setupChartStyle();
+    }
+
+    private void setupQuickActions() {
+
+        rvQuickActions.setLayoutManager(new GridLayoutManager(this, 4));
+
+        List<QuickAction> actions = new ArrayList<>();
+
+        actions.add(new QuickAction("Orders", R.drawable.ic_orders));
+        actions.add(new QuickAction("Menu", R.drawable.ic_menu));
+        actions.add(new QuickAction("Analytics", R.drawable.ic_analytics));
+        actions.add(new QuickAction("Payouts", R.drawable.ic_payout));
+
+        DashboardQuickActionAdapter adapter =
+                new DashboardQuickActionAdapter(actions, action -> {
+
+                    switch (action.getTitle()) {
+
+                        case "Orders":
+                            startActivity(new Intent(this, OrdersActivity.class));
+                            break;
+
+                        case "Menu":
+                            startActivity(new Intent(this, MenuActivity.class));
+                            break;
+
+                        case "Analytics":
+                            startActivity(new Intent(this, AnalyticsActivity.class));
+                            break;
+
+                        case "Payouts":
+                            startActivity(new Intent(this, PayoutsActivity.class));
+                            break;
+                    }
+                });
+
+        rvQuickActions.setAdapter(adapter);
+    }
+
+    private void setupChartStyle() {
+
         barChart.getDescription().setEnabled(false);
         barChart.setDrawGridBackground(false);
-        barChart.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-        barChart.getXAxis().setDrawGridLines(false);
+
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+
         barChart.getAxisLeft().setDrawGridLines(false);
         barChart.getAxisRight().setEnabled(false);
+
         barChart.getLegend().setEnabled(false);
     }
 
     private void loadDashboardData() {
+
         String vendorId = TokenManager.getInstance(this).getUserId();
+
         if (vendorId == null) {
             showError("User ID not found. Please login again.");
             return;
         }
 
         dashboardViewModel.getDashboardStats(vendorId).observe(this, resource -> {
-            if (resource != null) {
-                switch (resource.status) {
-                    case LOADING:
-                        swipeRefreshLayout.setRefreshing(true);
-                        break;
-                    case SUCCESS:
-                        swipeRefreshLayout.setRefreshing(false);
-                        if (resource.data != null) {
-                            updateUI(resource.data);
-                        }
-                        break;
-                    case ERROR:
-                        swipeRefreshLayout.setRefreshing(false);
-                        showError(resource.message);
-                        break;
-                }
+
+            if (resource == null) return;
+
+            switch (resource.status) {
+
+                case LOADING:
+                    progressBar.setVisibility(View.VISIBLE);
+                    swipeRefreshLayout.setRefreshing(true);
+                    break;
+
+                case SUCCESS:
+                    progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
+
+                    if (resource.data != null) {
+                        updateUI(resource.data);
+                    }
+                    break;
+
+                case ERROR:
+                    progressBar.setVisibility(View.GONE);
+                    swipeRefreshLayout.setRefreshing(false);
+                    showError(resource.message);
+                    break;
             }
         });
-        
-        // Trigger refresh if needed
+
         dashboardViewModel.refreshStats(vendorId);
     }
 
     private void updateUI(DashboardStats stats) {
-        tvTotalRevenue.setText(String.format(Locale.getDefault(), "$%.2f", stats.getTotalRevenue()));
+
+        tvTotalRevenue.setText(
+                String.format(Locale.getDefault(), "₹%.2f", stats.getTotalRevenue())
+        );
+
         tvTotalOrders.setText(String.valueOf(stats.getTotalOrders()));
         tvActiveCustomers.setText(String.valueOf(stats.getActiveCustomers()));
-        tvAverageRating.setText(String.format(Locale.getDefault(), "%.1f", stats.getAverageRating()));
+
+        tvAverageRating.setText(
+                String.format(Locale.getDefault(), "%.1f", stats.getAverageRating())
+        );
 
         setupChart(stats.getWeeklyOrders());
     }
 
     private void setupChart(List<Integer> weeklyOrders) {
+
         if (weeklyOrders == null || weeklyOrders.isEmpty()) return;
 
         List<BarEntry> entries = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
 
         for (int i = 0; i < weeklyOrders.size(); i++) {
             entries.add(new BarEntry(i, weeklyOrders.get(i)));
-            labels.add("Day " + (i + 1));
         }
 
         BarDataSet dataSet = new BarDataSet(entries, "Orders");
-        dataSet.setColor(Color.BLUE);
+
+        dataSet.setColor(Color.parseColor("#6C2BD9"));
         dataSet.setValueTextSize(12f);
 
         BarData data = new BarData(dataSet);
         data.setBarWidth(0.9f);
 
+        String[] days = {"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+
         barChart.setData(data);
-        barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
-        barChart.invalidate(); // refresh
+        barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(days));
+
+        barChart.invalidate();
+    }
+
+    private void toggleRestaurantStatus() {
+
+        isRestaurantOpen = !isRestaurantOpen;
+
+        if (isRestaurantOpen) {
+
+            tvRestaurantStatus.setText("Restaurant Open");
+            tvRestaurantStatus.setTextColor(Color.parseColor("#4CAF50"));
+
+        } else {
+
+            tvRestaurantStatus.setText("Restaurant Closed");
+            tvRestaurantStatus.setTextColor(Color.RED);
+        }
     }
 }
