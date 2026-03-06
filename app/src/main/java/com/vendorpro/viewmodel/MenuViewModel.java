@@ -8,31 +8,36 @@ import androidx.lifecycle.LiveData;
 
 import com.vendorpro.model.MenuItem;
 import com.vendorpro.repository.MenuRepository;
+import com.vendorpro.network.Resource;
 
 import java.util.List;
 
 public class MenuViewModel extends AndroidViewModel {
 
-    private MenuRepository repository;
+    private final MenuRepository repository;
 
     public MenuViewModel(@NonNull Application application) {
         super(application);
         repository = new MenuRepository(application);
     }
 
-    public LiveData<com.vendorpro.network.Resource<List<MenuItem>>> getMenu(String vendorId) {
-        return repository.getMenu(vendorId);
+    // 🔹 Get menu using messId
+    public LiveData<Resource<List<MenuItem>>> getMenu(String messId) {
+        return repository.getMenu(messId);
     }
 
-    public LiveData<com.vendorpro.network.Resource<MenuItem>> addMenuItem(String vendorId, MenuItem menuItem) {
-        return repository.addMenuItem(vendorId, menuItem);
+    // 🔹 Add menu item
+    public LiveData<Resource<MenuItem>> addMenuItem(String messId, MenuItem menuItem) {
+        return repository.addMenuItem(messId, menuItem);
     }
 
-    public LiveData<com.vendorpro.network.Resource<MenuItem>> updateMenuItem(String itemId, MenuItem menuItem) {
+    // 🔹 Update menu item
+    public LiveData<Resource<MenuItem>> updateMenuItem(String itemId, MenuItem menuItem) {
         return repository.updateMenuItem(itemId, menuItem);
     }
 
-    public LiveData<com.vendorpro.network.Resource<Boolean>> deleteMenuItem(String itemId) {
+    // 🔹 Delete menu item
+    public LiveData<Resource<Boolean>> deleteMenuItem(String itemId) {
         return repository.deleteMenuItem(itemId);
     }
 }

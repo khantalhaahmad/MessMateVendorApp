@@ -2,6 +2,7 @@ package com.vendorpro.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,6 +22,8 @@ import com.vendorpro.viewmodel.MenuViewModel;
 public class MenuActivity extends BaseActivity
         implements MenuAdapter.OnItemClickListener {
 
+    private static final String TAG = "MENU_DEBUG";
+
     private MenuViewModel viewModel;
     private RecyclerView recyclerView;
     private FloatingActionButton fabAdd;
@@ -31,23 +34,25 @@ public class MenuActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
+        Log.d(TAG, "MenuActivity started");
+
         initializeViews();
         viewModel = new ViewModelProvider(this).get(MenuViewModel.class);
 
         fabAdd.setOnClickListener(v ->
-                startActivity(
-                        new Intent(this, AddEditMenuItemActivity.class)
-                )
+                startActivity(new Intent(this, AddEditMenuItemActivity.class))
         );
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Log.d(TAG, "MenuActivity resumed → loading menu");
         loadMenu();
     }
 
     private void initializeViews() {
+
         recyclerView = findViewById(R.id.recyclerView);
         fabAdd = findViewById(R.id.fabAdd);
         tvEmpty = findViewById(R.id.tvEmpty);
@@ -56,54 +61,92 @@ public class MenuActivity extends BaseActivity
     }
 
     private void loadMenu() {
-        String vendorId = TokenManager
-                .getInstance(this)
-                .getUserId();
 
-        if (vendorId == null || vendorId.isEmpty()) {
+        // 🔹 Fetch Mess ID
+        String messId = TokenManager
+                .getInstance(this)
+                .getMessId();
+
+        Log.d(TAG, "Fetched Mess ID: " + messId);
+
+        if (messId == null || messId.isEmpty()) {
+
+            Log.e(TAG, "Mess ID is NULL or empty");
+
             tvEmpty.setVisibility(View.VISIBLE);
+            showError("Mess ID not found");
+
             return;
         }
 
-        viewModel.getMenu(vendorId)
+        Log.d(TAG, "Calling API → getMenu(" + messId + ")");
+
+        viewModel.getMenu(messId)
                 .observe(this, resource -> {
 
-                    if (resource == null) return;
+                    if (resource == null) {
+                        Log.e(TAG, "Resource is NULL");
+                        return;
+                    }
 
                     switch (resource.status) {
 
                         case LOADING:
+
+                            Log.d(TAG, "Menu loading...");
                             showLoading();
+
                             break;
 
                         case SUCCESS:
+
                             hideLoading();
 
-                            if (resource.data != null
-                                    && !resource.data.isEmpty()) {
+                            Log.d(TAG, "Menu API success");
 
-                                recyclerView.setAdapter(
-                                        new MenuAdapter(
-                                                this,
-                                                resource.data,
-                                                this
-                                        )
-                                );
-                                tvEmpty.setVisibility(View.GONE);
+                            if (resource.data != null) {
+
+                                Log.d(TAG, "Menu items count: " + resource.data.size());
+
+                                if (!resource.data.isEmpty()) {
+
+                                    recyclerView.setAdapter(
+                                            new MenuAdapter(
+                                                    this,
+                                                    resource.data,
+                                                    this
+                                            )
+                                    );
+
+                                    tvEmpty.setVisibility(View.GONE);
+
+                                } else {
+
+                                    Log.w(TAG, "Menu list empty");
+
+                                    recyclerView.setAdapter(null);
+                                    tvEmpty.setVisibility(View.VISIBLE);
+                                }
 
                             } else {
-                                recyclerView.setAdapter(null);
-                                tvEmpty.setVisibility(View.VISIBLE);
+
+                                Log.e(TAG, "Menu response data NULL");
                             }
+
                             break;
 
                         case ERROR:
+
                             hideLoading();
+
+                            Log.e(TAG, "Menu API error: " + resource.message);
+
                             showError(
                                     resource.message != null
                                             ? resource.message
                                             : "Failed to load menu"
                             );
+
                             break;
                     }
                 });
@@ -111,6 +154,9 @@ public class MenuActivity extends BaseActivity
 
     @Override
     public void onEditClick(MenuItem item) {
+
+        Log.d(TAG, "Edit item clicked: " + item.getName());
+
         Intent intent = new Intent(this, AddEditMenuItemActivity.class);
         intent.putExtra("item", item);
         startActivity(intent);
@@ -118,16 +164,21 @@ public class MenuActivity extends BaseActivity
 
     @Override
     public void onDeleteClick(MenuItem item) {
+
+        Log.d(TAG, "Delete item clicked: " + item.getName());
+
         new AlertDialog.Builder(this)
                 .setTitle("Delete Item")
                 .setMessage("Are you sure you want to delete this item?")
-                .setPositiveButton("Yes",
-                        (dialog, which) -> deleteItem(item))
+                .setPositiveButton("Yes", (dialog, which) -> deleteItem(item))
                 .setNegativeButton("No", null)
                 .show();
     }
 
     private void deleteItem(MenuItem item) {
+
+        Log.d(TAG, "Deleting item ID: " + item.getId());
+
         showLoading();
 
         viewModel.deleteMenuItem(item.getId())
@@ -139,6 +190,8 @@ public class MenuActivity extends BaseActivity
                             && resource.status == Resource.Status.SUCCESS
                             && Boolean.TRUE.equals(resource.data)) {
 
+                        Log.d(TAG, "Item deleted successfully");
+
                         Toast.makeText(
                                 this,
                                 "Item deleted",
@@ -148,6 +201,10 @@ public class MenuActivity extends BaseActivity
                         loadMenu();
 
                     } else {
+
+                        Log.e(TAG, "Delete failed: "
+                                + (resource != null ? resource.message : "unknown"));
+
                         Toast.makeText(
                                 this,
                                 resource != null && resource.message != null

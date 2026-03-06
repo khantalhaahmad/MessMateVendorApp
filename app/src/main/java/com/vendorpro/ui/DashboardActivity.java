@@ -24,6 +24,8 @@ import com.vendorpro.model.QuickAction;
 import com.vendorpro.network.TokenManager;
 import com.vendorpro.viewmodel.DashboardViewModel;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -155,12 +157,34 @@ public class DashboardActivity extends BaseActivity {
                     break;
 
                 case SUCCESS:
+
                     progressBar.setVisibility(View.GONE);
                     swipeRefreshLayout.setRefreshing(false);
 
                     if (resource.data != null) {
+
+                        Log.d("DASHBOARD_DEBUG", "Stats received");
+
+                        String messId = resource.data.getMessId();
+
+                        Log.d("DASHBOARD_DEBUG", "Mess ID from API: " + messId);
+
+                        if (messId != null) {
+
+                            TokenManager
+                                    .getInstance(this)
+                                    .saveMessId(messId);
+
+                            Log.d("DASHBOARD_DEBUG", "Mess ID saved in TokenManager");
+
+                        } else {
+
+                            Log.e("DASHBOARD_DEBUG", "Mess ID NULL from API");
+                        }
+
                         updateUI(resource.data);
                     }
+
                     break;
 
                 case ERROR:
@@ -183,8 +207,9 @@ public class DashboardActivity extends BaseActivity {
         tvTotalOrders.setText(String.valueOf(stats.getTotalOrders()));
         tvActiveCustomers.setText(String.valueOf(stats.getActiveCustomers()));
 
+        // 🔥 FIXED METHOD
         tvAverageRating.setText(
-                String.format(Locale.getDefault(), "%.1f", stats.getAverageRating())
+                String.format(Locale.getDefault(), "%.1f", stats.getAvgRating())
         );
 
         setupChart(stats.getWeeklyOrders());
@@ -208,7 +233,7 @@ public class DashboardActivity extends BaseActivity {
         BarData data = new BarData(dataSet);
         data.setBarWidth(0.9f);
 
-        String[] days = {"Mon","Tue","Wed","Thu","Fri","Sat","Sun"};
+        String[] days = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 
         barChart.setData(data);
         barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(days));
