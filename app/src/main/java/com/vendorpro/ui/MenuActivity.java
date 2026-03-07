@@ -37,6 +37,7 @@ public class MenuActivity extends BaseActivity
         Log.d(TAG, "MenuActivity started");
 
         initializeViews();
+
         viewModel = new ViewModelProvider(this).get(MenuViewModel.class);
 
         fabAdd.setOnClickListener(v ->
@@ -60,9 +61,12 @@ public class MenuActivity extends BaseActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
+    /* =====================================
+       LOAD MENU
+    ===================================== */
+
     private void loadMenu() {
 
-        // 🔹 Fetch Mess ID
         String messId = TokenManager
                 .getInstance(this)
                 .getMessId();
@@ -79,58 +83,38 @@ public class MenuActivity extends BaseActivity
             return;
         }
 
-        Log.d(TAG, "Calling API → getMenu(" + messId + ")");
-
         viewModel.getMenu(messId)
                 .observe(this, resource -> {
 
-                    if (resource == null) {
-                        Log.e(TAG, "Resource is NULL");
-                        return;
-                    }
+                    if (resource == null) return;
 
                     switch (resource.status) {
 
                         case LOADING:
 
-                            Log.d(TAG, "Menu loading...");
                             showLoading();
-
                             break;
 
                         case SUCCESS:
 
                             hideLoading();
 
-                            Log.d(TAG, "Menu API success");
+                            if (resource.data != null && !resource.data.isEmpty()) {
 
-                            if (resource.data != null) {
+                                recyclerView.setAdapter(
+                                        new MenuAdapter(
+                                                this,
+                                                resource.data,
+                                                this
+                                        )
+                                );
 
-                                Log.d(TAG, "Menu items count: " + resource.data.size());
-
-                                if (!resource.data.isEmpty()) {
-
-                                    recyclerView.setAdapter(
-                                            new MenuAdapter(
-                                                    this,
-                                                    resource.data,
-                                                    this
-                                            )
-                                    );
-
-                                    tvEmpty.setVisibility(View.GONE);
-
-                                } else {
-
-                                    Log.w(TAG, "Menu list empty");
-
-                                    recyclerView.setAdapter(null);
-                                    tvEmpty.setVisibility(View.VISIBLE);
-                                }
+                                tvEmpty.setVisibility(View.GONE);
 
                             } else {
 
-                                Log.e(TAG, "Menu response data NULL");
+                                recyclerView.setAdapter(null);
+                                tvEmpty.setVisibility(View.VISIBLE);
                             }
 
                             break;
@@ -138,8 +122,6 @@ public class MenuActivity extends BaseActivity
                         case ERROR:
 
                             hideLoading();
-
-                            Log.e(TAG, "Menu API error: " + resource.message);
 
                             showError(
                                     resource.message != null
@@ -152,20 +134,24 @@ public class MenuActivity extends BaseActivity
                 });
     }
 
+    /* =====================================
+       EDIT ITEM
+    ===================================== */
+
     @Override
     public void onEditClick(MenuItem item) {
-
-        Log.d(TAG, "Edit item clicked: " + item.getName());
 
         Intent intent = new Intent(this, AddEditMenuItemActivity.class);
         intent.putExtra("item", item);
         startActivity(intent);
     }
 
+    /* =====================================
+       DELETE ITEM
+    ===================================== */
+
     @Override
     public void onDeleteClick(MenuItem item) {
-
-        Log.d(TAG, "Delete item clicked: " + item.getName());
 
         new AlertDialog.Builder(this)
                 .setTitle("Delete Item")
@@ -176,8 +162,6 @@ public class MenuActivity extends BaseActivity
     }
 
     private void deleteItem(MenuItem item) {
-
-        Log.d(TAG, "Deleting item ID: " + item.getId());
 
         showLoading();
 
@@ -190,8 +174,6 @@ public class MenuActivity extends BaseActivity
                             && resource.status == Resource.Status.SUCCESS
                             && Boolean.TRUE.equals(resource.data)) {
 
-                        Log.d(TAG, "Item deleted successfully");
-
                         Toast.makeText(
                                 this,
                                 "Item deleted",
@@ -202,14 +184,47 @@ public class MenuActivity extends BaseActivity
 
                     } else {
 
-                        Log.e(TAG, "Delete failed: "
-                                + (resource != null ? resource.message : "unknown"));
-
                         Toast.makeText(
                                 this,
                                 resource != null && resource.message != null
                                         ? resource.message
                                         : "Failed to delete item",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                });
+    }
+
+    /* =====================================
+       TOGGLE AVAILABILITY
+    ===================================== */
+
+    @Override
+    public void onToggleClick(MenuItem item) {
+
+        showLoading();
+
+        viewModel.toggleAvailability(item.getId())
+                .observe(this, resource -> {
+
+                    hideLoading();
+
+                    if (resource != null
+                            && resource.status == Resource.Status.SUCCESS) {
+
+                        Toast.makeText(
+                                this,
+                                "Availability updated",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        loadMenu();
+
+                    } else {
+
+                        Toast.makeText(
+                                this,
+                                "Failed to update availability",
                                 Toast.LENGTH_SHORT
                         ).show();
                     }
