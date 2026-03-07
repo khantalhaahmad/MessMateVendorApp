@@ -1,9 +1,12 @@
 package com.vendorpro.ui;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.Button;
@@ -12,6 +15,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.vendorpro.R;
@@ -29,19 +34,18 @@ import okhttp3.RequestBody;
 public class AddEditMenuItemActivity extends BaseActivity {
 
     private static final int PICK_IMAGE = 101;
+    private static final int PERMISSION_CODE = 102;
 
     private EditText etName, etDescription, etPrice;
     private CheckBox cbAvailable;
     private Button btnSave, btnSelectImage;
     private TextView tvTitle;
-
     private ImageView imagePreview;
 
     private MenuViewModel viewModel;
     private MenuItem menuItem;
 
     private boolean isEditMode = false;
-
     private Uri imageUri;
 
     @Override
@@ -59,7 +63,7 @@ public class AddEditMenuItemActivity extends BaseActivity {
             populateData();
         }
 
-        btnSelectImage.setOnClickListener(v -> openGallery());
+        btnSelectImage.setOnClickListener(v -> checkPermissionAndOpenGallery());
 
         btnSave.setOnClickListener(v -> saveMenuItem());
     }
@@ -81,6 +85,34 @@ public class AddEditMenuItemActivity extends BaseActivity {
     }
 
     /* =====================================
+       Permission check
+    ===================================== */
+
+    private void checkPermissionAndOpenGallery() {
+
+        String permission;
+
+        if (Build.VERSION.SDK_INT >= 33) {
+            permission = Manifest.permission.READ_MEDIA_IMAGES;
+        } else {
+            permission = Manifest.permission.READ_EXTERNAL_STORAGE;
+        }
+
+        if (ContextCompat.checkSelfPermission(this, permission)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{permission},
+                    PERMISSION_CODE
+            );
+
+        } else {
+            openGallery();
+        }
+    }
+
+    /* =====================================
        Open gallery
     ===================================== */
 
@@ -95,6 +127,29 @@ public class AddEditMenuItemActivity extends BaseActivity {
     }
 
     /* =====================================
+       Permission result
+    ===================================== */
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions,
+                                           int[] grantResults) {
+
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == PERMISSION_CODE) {
+
+            if (grantResults.length > 0 &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                openGallery();
+            } else {
+                showError("Permission required to select image");
+            }
+        }
+    }
+
+    /* =====================================
        Image result
     ===================================== */
 
@@ -103,11 +158,13 @@ public class AddEditMenuItemActivity extends BaseActivity {
 
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == PICK_IMAGE &&
+                resultCode == Activity.RESULT_OK &&
+                data != null) {
 
             imageUri = data.getData();
 
-            if (imagePreview != null) {
+            if (imagePreview != null && imageUri != null) {
                 imagePreview.setImageURI(imageUri);
             }
         }
@@ -140,10 +197,7 @@ public class AddEditMenuItemActivity extends BaseActivity {
         String description = etDescription.getText().toString().trim();
         String priceStr = etPrice.getText().toString().trim();
 
-        boolean isAvailable = cbAvailable.isChecked();
-
         if (name.isEmpty() || priceStr.isEmpty()) {
-
             showMessage("Please fill required fields");
             return;
         }
@@ -155,14 +209,9 @@ public class AddEditMenuItemActivity extends BaseActivity {
                 .getMessId();
 
         if (messId == null || messId.isEmpty()) {
-
             showError("Mess ID not found");
             return;
         }
-
-        /* =============================
-           RequestBody fields
-        ============================= */
 
         RequestBody nameBody =
                 RequestBody.create(MediaType.parse("text/plain"), name);
@@ -171,7 +220,8 @@ public class AddEditMenuItemActivity extends BaseActivity {
                 RequestBody.create(MediaType.parse("text/plain"), description);
 
         RequestBody priceBody =
-                RequestBody.create(MediaType.parse("text/plain"), String.valueOf(price));
+                RequestBody.create(MediaType.parse("text/plain"),
+                        String.valueOf(price));
 
         RequestBody vegBody =
                 RequestBody.create(MediaType.parse("text/plain"), "true");
@@ -200,10 +250,6 @@ public class AddEditMenuItemActivity extends BaseActivity {
             }
         }
 
-        /* =====================================
-           EDIT MODE
-        ===================================== */
-
         if (isEditMode && menuItem != null) {
 
             viewModel.updateMenuItem(
@@ -217,13 +263,7 @@ public class AddEditMenuItemActivity extends BaseActivity {
             ).observe(this,
                     resource -> handleResource(resource, "Item updated"));
 
-        }
-
-        /* =====================================
-           ADD MODE
-        ===================================== */
-
-        else {
+        } else {
 
             viewModel.addMenuItem(
                     messId,
@@ -282,9 +322,7 @@ public class AddEditMenuItemActivity extends BaseActivity {
             case SUCCESS:
 
                 hideLoading();
-
                 showMessage(successMessage);
-
                 finish();
 
                 break;
@@ -292,7 +330,6 @@ public class AddEditMenuItemActivity extends BaseActivity {
             case ERROR:
 
                 hideLoading();
-
                 showError(resource.message);
 
                 break;
