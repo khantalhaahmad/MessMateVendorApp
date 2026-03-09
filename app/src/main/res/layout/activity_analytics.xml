@@ -23,14 +23,15 @@
             android:textColor="#212121"
             android:layout_marginBottom="16dp"/>
 
-        <!-- Stats Cards Row 1 -->
+
+        <!-- Stats Row 1 -->
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <!-- Revenue Card -->
+            <!-- Revenue -->
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -60,7 +61,8 @@
 
             </LinearLayout>
 
-            <!-- Orders Card -->
+
+            <!-- Orders -->
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -92,7 +94,8 @@
 
         </LinearLayout>
 
-        <!-- Stats Cards Row 2 -->
+
+        <!-- Stats Row 2 -->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -130,6 +133,7 @@
 
             </LinearLayout>
 
+
             <!-- Rating -->
 
             <LinearLayout
@@ -162,6 +166,58 @@
 
         </LinearLayout>
 
+
+        <!-- Average Order Value -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="90dp"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:background="@drawable/bg_card"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:text="Average Order Value"
+                android:textSize="13sp"
+                android:textColor="#757575"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/tvAverageOrderValue"
+                android:text="₹0"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#4CAF50"
+                android:layout_marginTop="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+
+        <!-- Top Items -->
+
+        <TextView
+            android:text="Top Selling Items"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginTop="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tvTopItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No data"
+            android:textSize="14sp"
+            android:textColor="#212121"
+            android:layout_marginTop="8dp"/>
+
+
         <!-- Weekly Orders Chart -->
 
         <TextView
@@ -178,6 +234,7 @@
             android:layout_width="match_parent"
             android:layout_height="250dp"
             android:layout_marginTop="10dp"/>
+
 
         <!-- Monthly Revenue Chart -->
 

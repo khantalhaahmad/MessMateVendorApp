@@ -154,6 +154,8 @@ public class DashboardActivity extends BaseActivity {
             return;
         }
 
+        dashboardViewModel.refreshStats(vendorId);
+
         dashboardViewModel.getDashboardStats(vendorId).observe(this, resource -> {
 
             if (resource == null) return;
@@ -176,15 +178,13 @@ public class DashboardActivity extends BaseActivity {
 
                         String messId = resource.data.getMessId();
 
-                        Log.d("DASHBOARD_DEBUG", "Mess ID from API: " + messId);
-
                         if (messId != null) {
 
                             TokenManager
                                     .getInstance(this)
                                     .saveMessId(messId);
 
-                            Log.d("DASHBOARD_DEBUG", "Mess ID saved in TokenManager");
+                            Log.d("DASHBOARD_DEBUG", "Mess ID saved: " + messId);
 
                         } else {
 
@@ -203,25 +203,29 @@ public class DashboardActivity extends BaseActivity {
                     break;
             }
         });
-
-        dashboardViewModel.refreshStats(vendorId);
     }
 
     private void updateUI(DashboardStats stats) {
 
+        /* ---------- TODAY DATA ---------- */
+
         tvTotalRevenue.setText(
-                String.format(Locale.getDefault(), "₹%.2f", stats.getTotalRevenue())
+                String.format(Locale.getDefault(), "₹%.2f", stats.getRevenueToday())
         );
 
-        tvTotalOrders.setText(String.valueOf(stats.getTotalOrders()));
-        tvActiveCustomers.setText(String.valueOf(stats.getActiveCustomers()));
+        tvTotalOrders.setText(String.valueOf(stats.getOrdersToday()));
 
-        // 🔥 FIXED METHOD
+        tvActiveCustomers.setText(String.valueOf(stats.getCustomersToday()));
+
         tvAverageRating.setText(
                 String.format(Locale.getDefault(), "%.1f", stats.getAvgRating())
         );
 
-        setupChart(stats.getWeeklyOrders());
+        /* ---------- WEEKLY CHART ---------- */
+
+        if (stats.getWeeklyOrders() != null) {
+            setupChart(stats.getWeeklyOrders());
+        }
     }
 
     private void setupChart(List<Integer> weeklyOrders) {

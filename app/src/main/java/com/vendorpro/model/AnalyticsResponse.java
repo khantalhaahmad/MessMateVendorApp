@@ -10,6 +10,8 @@ public class AnalyticsResponse {
 
     public double totalRevenue;
 
+    public double averageOrderValue;   // NEW
+
     public int activeCustomers;
 
     public double avgRating;
@@ -21,5 +23,7 @@ public class AnalyticsResponse {
     public List<String> weeklyLabels;
 
     public List<String> monthlyLabels;
+
+    public List<TopItem> topItems;     // NEW
 
 }

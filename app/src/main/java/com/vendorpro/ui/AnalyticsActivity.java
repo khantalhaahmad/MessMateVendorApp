@@ -23,6 +23,7 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 
 import com.vendorpro.R;
 import com.vendorpro.model.AnalyticsResponse;
+import com.vendorpro.model.TopItem;
 import com.vendorpro.network.TokenManager;
 import com.vendorpro.viewmodel.AnalyticsViewModel;
 
@@ -39,6 +40,10 @@ public class AnalyticsActivity extends BaseActivity {
     private TextView tvOrders;
     private TextView tvCustomers;
     private TextView tvRating;
+
+    // NEW
+    private TextView tvAverageOrderValue;
+    private TextView tvTopItems;
 
     private BarChart weeklyChart;
     private LineChart revenueChart;
@@ -75,6 +80,9 @@ public class AnalyticsActivity extends BaseActivity {
         tvCustomers = findViewById(R.id.tvCustomers);
         tvRating = findViewById(R.id.tvRating);
 
+        tvAverageOrderValue = findViewById(R.id.tvAverageOrderValue);
+        tvTopItems = findViewById(R.id.tvTopItems);
+
         weeklyChart = findViewById(R.id.weeklyChart);
         revenueChart = findViewById(R.id.revenueChart);
 
@@ -100,6 +108,10 @@ public class AnalyticsActivity extends BaseActivity {
                 setRevenueChart(data.monthlyRevenue);
             }
 
+            if (data.topItems != null && !data.topItems.isEmpty()) {
+                showTopItems(data.topItems);
+            }
+
         });
     }
 
@@ -110,11 +122,39 @@ public class AnalyticsActivity extends BaseActivity {
         );
 
         tvOrders.setText(String.valueOf(data.totalOrders));
+
         tvCustomers.setText(String.valueOf(data.activeCustomers));
 
         tvRating.setText(
                 String.format(Locale.getDefault(),"%.1f ⭐",data.avgRating)
         );
+
+        tvAverageOrderValue.setText(
+                String.format(Locale.getDefault(),"₹%.2f",data.averageOrderValue)
+        );
+    }
+
+    /* =========================================================
+       TOP ITEMS
+    ========================================================= */
+
+    private void showTopItems(List<TopItem> items){
+
+        StringBuilder builder = new StringBuilder();
+
+        for(int i=0;i<items.size();i++){
+
+            TopItem item = items.get(i);
+
+            builder.append(i+1)
+                    .append(". ")
+                    .append(item.name)
+                    .append(" (")
+                    .append(item.count)
+                    .append(")\n");
+        }
+
+        tvTopItems.setText(builder.toString());
     }
 
     /* =========================================================
@@ -155,18 +195,8 @@ public class AnalyticsActivity extends BaseActivity {
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
 
-        float maxOrders = 10f;
-
-        for(Integer val : orders){
-            if(val > maxOrders){
-                maxOrders = val + 5;
-            }
-        }
-
         YAxis leftAxis = weeklyChart.getAxisLeft();
         leftAxis.setAxisMinimum(0f);
-        leftAxis.setAxisMaximum(maxOrders);
-        leftAxis.setGranularity(1f);
 
         weeklyChart.animateY(1200);
         weeklyChart.invalidate();
@@ -190,12 +220,7 @@ public class AnalyticsActivity extends BaseActivity {
         dataSet.setCircleColor(Color.parseColor("#FF6B00"));
         dataSet.setLineWidth(3f);
         dataSet.setCircleRadius(5f);
-        dataSet.setValueTextColor(Color.BLACK);
-        dataSet.setValueTextSize(12f);
 
-        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-
-        // Gradient fill
         dataSet.setDrawFilled(true);
         dataSet.setFillColor(Color.parseColor("#33FF6B00"));
 
@@ -218,20 +243,8 @@ public class AnalyticsActivity extends BaseActivity {
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
 
-        int maxRevenue = 1000;
-
-        for(Integer r : revenue){
-            if(r > maxRevenue){
-                maxRevenue = r;
-            }
-        }
-
-        int roundedMax = ((maxRevenue / 1000) + 1) * 1000;
-
         YAxis leftAxis = revenueChart.getAxisLeft();
         leftAxis.setAxisMinimum(0f);
-        leftAxis.setAxisMaximum(roundedMax);
-        leftAxis.setGranularity(roundedMax / 5f);
 
         revenueChart.animateY(1200);
         revenueChart.invalidate();
