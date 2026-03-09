@@ -109,7 +109,16 @@ public class DashboardActivity extends BaseActivity {
                             break;
 
                         case "Analytics":
-                            startActivity(new Intent(this, AnalyticsActivity.class));
+
+                            String vendorId = TokenManager.getInstance(this).getUserId();
+
+                            Intent analyticsIntent =
+                                    new Intent(this, AnalyticsActivity.class);
+
+                            analyticsIntent.putExtra("ownerId", vendorId);
+
+                            startActivity(analyticsIntent);
+
                             break;
 
                         case "Payouts":

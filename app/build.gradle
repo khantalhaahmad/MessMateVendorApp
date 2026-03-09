@@ -4,10 +4,12 @@ plugins {
 }
 
 android {
+
     namespace 'com.vendorpro'
     compileSdk 34
 
     defaultConfig {
+
         applicationId "com.vendorpro"
         minSdk 24
         targetSdk 34
@@ -18,8 +20,11 @@ android {
     }
 
     buildTypes {
+
         release {
+
             minifyEnabled false
+
             proguardFiles getDefaultProguardFile(
                     'proguard-android-optimize.txt'
             ), 'proguard-rules.pro'
@@ -27,6 +32,7 @@ android {
     }
 
     compileOptions {
+
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
@@ -35,32 +41,41 @@ android {
 dependencies {
 
     // ================= ANDROID CORE =================
+
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'androidx.viewpager2:viewpager2:1.0.0'   // 🔥 Hero Text Slider
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'com.google.android.material:material:1.11.0'
 
     // ================= FIREBASE =================
+
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
+
     implementation 'com.google.firebase:firebase-analytics'
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-messaging'
 
     // ================= NETWORK =================
+
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
-    // ================= CHARTS =================
+    // ================= CHARTS (ANALYTICS) =================
+
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     // ================= LIFECYCLE =================
+
     implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
     implementation 'androidx.lifecycle:lifecycle-livedata:2.6.2'
 
     // ================= UI HELPERS =================
+
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 
     // ================= IMAGE LOADING =================
+
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+
 }
