@@ -1,121 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#F6F7FB">
 
-    <TextView
-        android:id="@+id/tvDetailCustomerName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Customer Name"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tvDetailOrderId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Order #12345"
-        android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailCustomerName" />
-
-    <TextView
-        android:id="@+id/tvDetailStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="PENDING"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:padding="4dp"
-        android:background="#EEE"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tvItemsTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Items"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailOrderId" />
-
-    <TextView
-        android:id="@+id/tvItemsList"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="1x Burger - $10.00\n2x Coke - $4.00"
-        android:textSize="14sp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvItemsTitle" />
-
-    <TextView
-        android:id="@+id/tvDetailTotal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Total: $14.00"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvItemsList" />
-
-    <!-- Action Buttons -->
     <LinearLayout
-        android:id="@+id/layoutActions"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="2"
-        android:layout_marginTop="32dp"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailTotal">
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- ORDER CARD -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="18dp">
+
+                <!-- CUSTOMER + STATUS -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tvDetailCustomerName"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Customer Name"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvDetailStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="PENDING"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#FFFFFF"
+                        android:padding="6dp"
+                        android:background="@drawable/status_chip_pending" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvDetailOrderId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="#12345678"
+                    android:textColor="#888"
+                    android:layout_marginTop="4dp" />
+
+                <!-- DIVIDER -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#EEEEEE"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- ITEMS TITLE -->
+                <TextView
+                    android:id="@+id/tvItemsTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Items"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    android:textColor="#222222"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvItemsList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="2x Paneer Roll"
+                    android:layout_marginTop="6dp"
+                    android:textColor="#555"/>
+
+                <!-- TOTAL -->
+                <TextView
+                    android:id="@+id/tvDetailTotal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₹250"
+                    android:textStyle="bold"
+                    android:textSize="20sp"
+                    android:textColor="#000"
+                    android:layout_marginTop="14dp"/>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- ACTION BUTTONS -->
+        <LinearLayout
+            android:id="@+id/layoutActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp">
+
+            <Button
+                android:id="@+id/btnReject"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:text="Reject"
+                android:textColor="#fff"
+                android:backgroundTint="#E53935"/>
+
+            <Button
+                android:id="@+id/btnAccept"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:text="Accept"
+                android:textColor="#fff"
+                android:backgroundTint="#43A047"/>
+        </LinearLayout>
 
         <Button
-            android:id="@+id/btnReject"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="Reject"
-            android:backgroundTint="#D32F2F" />
+            android:id="@+id/btnPreparing"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Start Preparing"
+            android:layout_marginTop="14dp"
+            android:visibility="gone"
+            android:textColor="#fff"
+            android:backgroundTint="#FF9800"/>
 
         <Button
-            android:id="@+id/btnAccept"
-            android:layout_width="0dp"
+            android:id="@+id/btnReady"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Order Ready"
+            android:layout_marginTop="14dp"
+            android:visibility="gone"
+            android:textColor="#fff"
+            android:backgroundTint="#6C2BD9"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="Accept"
-            android:backgroundTint="#388E3C" />
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnComplete"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Mark as Completed"
-        android:layout_marginTop="32dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/tvDetailTotal" />
-
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -1,7 +1,6 @@
 package com.vendorpro.ui;
 
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -17,6 +16,7 @@ import com.vendorpro.model.OrderItem;
 import com.vendorpro.network.Resource;
 import com.vendorpro.viewmodel.OrderViewModel;
 
+import java.util.List;
 import java.util.Locale;
 
 public class OrderDetailActivity extends AppCompatActivity {
@@ -25,156 +25,275 @@ public class OrderDetailActivity extends AppCompatActivity {
     private OrderViewModel viewModel;
 
     private TextView tvCustomerName, tvOrderId, tvStatus, tvItemsList, tvTotal;
-    private LinearLayout layoutActions;
-    private Button btnAccept, btnReject, btnComplete;
+
+    private LinearLayout layoutPendingActions;
+    private Button btnAccept, btnReject;
+    private Button btnPreparing;
+    private Button btnReady;
+
     private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_detail);
 
         order = (Order) getIntent().getSerializableExtra("order");
+
         viewModel = new ViewModelProvider(this).get(OrderViewModel.class);
 
-        initializeViews();
+        initViews();
         populateData();
         setupActions();
     }
 
-    private void initializeViews() {
+    /* =============================
+       INIT VIEWS
+    ============================== */
+
+    private void initViews() {
+
         tvCustomerName = findViewById(R.id.tvDetailCustomerName);
         tvOrderId = findViewById(R.id.tvDetailOrderId);
         tvStatus = findViewById(R.id.tvDetailStatus);
         tvItemsList = findViewById(R.id.tvItemsList);
         tvTotal = findViewById(R.id.tvDetailTotal);
 
-        layoutActions = findViewById(R.id.layoutActions);
+        layoutPendingActions = findViewById(R.id.layoutActions);
+
         btnAccept = findViewById(R.id.btnAccept);
         btnReject = findViewById(R.id.btnReject);
-        btnComplete = findViewById(R.id.btnComplete);
+        btnPreparing = findViewById(R.id.btnPreparing);
+        btnReady = findViewById(R.id.btnReady);
 
         progressBar = findViewById(R.id.progressBar);
     }
 
+    /* =============================
+       POPULATE DATA
+    ============================== */
+
     private void populateData() {
+
         if (order == null) return;
 
         tvCustomerName.setText(
                 order.getCustomerName() != null
                         ? order.getCustomerName()
-                        : "Unknown"
+                        : "Customer"
         );
 
-        tvOrderId.setText(
-                order.getId() != null
-                        ? "Order #" + order.getId()
-                        : "Order #N/A"
-        );
+        if (order.getId() != null) {
+
+            String shortId = order.getId();
+
+            if (shortId.length() > 8) {
+                shortId = shortId.substring(0, 8);
+            }
+
+            tvOrderId.setText("Order #" + shortId);
+        }
 
         tvStatus.setText(order.getStatus());
 
         tvTotal.setText(
                 String.format(
                         Locale.getDefault(),
-                        "Total: ₹%.2f",
+                        "₹%.2f",
                         order.getTotalAmount()
                 )
         );
 
-        StringBuilder itemsBuilder = new StringBuilder();
-        if (order.getItems() != null && !order.getItems().isEmpty()) {
-            for (OrderItem item : order.getItems()) {
-                itemsBuilder.append(item.getQuantity())
-                        .append(" x ")
-                        .append(item.getName())
-                        .append(" - ₹")
-                        .append(String.format(
-                                Locale.getDefault(),
-                                "%.2f",
-                                item.getPrice()
-                        ))
-                        .append("\n");
-            }
-        } else {
-            itemsBuilder.append("No items");
-        }
-
-        tvItemsList.setText(itemsBuilder.toString());
+        buildItemsList(order.getItems());
 
         updateButtonsVisibility(order.getStatus());
     }
 
-    private void updateButtonsVisibility(String status) {
-        if ("PENDING".equalsIgnoreCase(status)) {
-            layoutActions.setVisibility(View.VISIBLE);
-            btnComplete.setVisibility(View.GONE);
-        } else if ("ACCEPTED".equalsIgnoreCase(status)) {
-            layoutActions.setVisibility(View.GONE);
-            btnComplete.setVisibility(View.VISIBLE);
+    /* =============================
+       BUILD ITEMS LIST
+    ============================== */
+
+    private void buildItemsList(List<OrderItem> items) {
+
+        StringBuilder builder = new StringBuilder();
+
+        if (items != null && !items.isEmpty()) {
+
+            for (OrderItem item : items) {
+
+                builder.append(item.getQuantity())
+                        .append(" x ")
+                        .append(item.getName())
+                        .append(" - ₹")
+                        .append(String.format(Locale.getDefault(), "%.2f", item.getPrice()))
+                        .append("\n");
+            }
+
         } else {
-            layoutActions.setVisibility(View.GONE);
-            btnComplete.setVisibility(View.GONE);
+
+            builder.append("No items");
+        }
+
+        tvItemsList.setText(builder.toString());
+    }
+
+    /* =============================
+       BUTTON VISIBILITY
+    ============================== */
+
+    private void updateButtonsVisibility(String status) {
+
+        layoutPendingActions.setVisibility(LinearLayout.GONE);
+        btnPreparing.setVisibility(Button.GONE);
+        btnReady.setVisibility(Button.GONE);
+
+        if ("pending".equalsIgnoreCase(status)) {
+
+            layoutPendingActions.setVisibility(LinearLayout.VISIBLE);
+
+        } else if ("accepted".equalsIgnoreCase(status)) {
+
+            btnPreparing.setVisibility(Button.VISIBLE);
+
+        } else if ("preparing".equalsIgnoreCase(status)) {
+
+            btnReady.setVisibility(Button.VISIBLE);
         }
     }
 
+    /* =============================
+       SETUP BUTTON ACTIONS
+    ============================== */
+
     private void setupActions() {
-        btnAccept.setOnClickListener(v -> updateStatus("ACCEPTED"));
-        btnReject.setOnClickListener(v -> updateStatus("REJECTED"));
-        btnComplete.setOnClickListener(v -> updateStatus("COMPLETED"));
+
+        btnAccept.setOnClickListener(v -> acceptOrder());
+
+        btnReject.setOnClickListener(v -> rejectOrder());
+
+        btnPreparing.setOnClickListener(v -> startPreparing());
+
+        btnReady.setOnClickListener(v -> markReady());
     }
 
-    private void setActionsEnabled(boolean enabled) {
-        btnAccept.setEnabled(enabled);
-        btnReject.setEnabled(enabled);
-        btnComplete.setEnabled(enabled);
+    /* =============================
+       LOADING STATE
+    ============================== */
+
+    private void setLoading(boolean loading) {
+
+        progressBar.setVisibility(
+                loading ? ProgressBar.VISIBLE : ProgressBar.GONE
+        );
+
+        btnAccept.setEnabled(!loading);
+        btnReject.setEnabled(!loading);
+        btnPreparing.setEnabled(!loading);
+        btnReady.setEnabled(!loading);
     }
 
-    private void updateStatus(String status) {
-        if (order == null) return;
+    /* =============================
+       ACCEPT ORDER
+    ============================== */
 
-        progressBar.setVisibility(View.VISIBLE);
-        setActionsEnabled(false);
+    private void acceptOrder() {
 
-        viewModel.updateOrderStatus(order.getId(), status)
-                .observe(this, resource -> {
+        setLoading(true);
 
-                    progressBar.setVisibility(View.GONE);
-                    setActionsEnabled(true);
+        viewModel.acceptOrder(order.getId()).observe(this, resource -> {
 
-                    if (resource == null) {
-                        Toast.makeText(
-                                this,
-                                "Something went wrong",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                        return;
-                    }
+            setLoading(false);
 
-                    if (resource.status == Resource.Status.SUCCESS
-                            && Boolean.TRUE.equals(resource.data)) {
+            if (resource.status == Resource.Status.SUCCESS) {
 
-                        Toast.makeText(
-                                this,
-                                "Order " + status,
-                                Toast.LENGTH_SHORT
-                        ).show();
+                order.setStatus("accepted");
 
-                        order.setStatus(status);
-                        tvStatus.setText(status);
-                        updateButtonsVisibility(status);
-                        setResult(RESULT_OK);
+                tvStatus.setText("accepted");
 
-                    } else if (resource.status == Resource.Status.ERROR) {
+                updateButtonsVisibility("accepted");
 
-                        Toast.makeText(
-                                this,
-                                resource.message != null
-                                        ? resource.message
-                                        : "Failed to update status",
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
-                });
+                Toast.makeText(this,"Order Accepted",Toast.LENGTH_SHORT).show();
+
+                setResult(RESULT_OK);
+            }
+        });
+    }
+
+    /* =============================
+       REJECT ORDER
+    ============================== */
+
+    private void rejectOrder() {
+
+        setLoading(true);
+
+        viewModel.rejectOrder(order.getId()).observe(this, resource -> {
+
+            setLoading(false);
+
+            if (resource.status == Resource.Status.SUCCESS) {
+
+                order.setStatus("cancelled");
+
+                Toast.makeText(this,"Order Rejected",Toast.LENGTH_SHORT).show();
+
+                setResult(RESULT_OK);
+
+                finish();
+            }
+        });
+    }
+
+    /* =============================
+       START PREPARING
+    ============================== */
+
+    private void startPreparing() {
+
+        setLoading(true);
+
+        viewModel.preparingOrder(order.getId()).observe(this, resource -> {
+
+            setLoading(false);
+
+            if (resource.status == Resource.Status.SUCCESS) {
+
+                order.setStatus("preparing");
+
+                tvStatus.setText("preparing");
+
+                updateButtonsVisibility("preparing");
+
+                Toast.makeText(this,"Cooking Started",Toast.LENGTH_SHORT).show();
+
+                setResult(RESULT_OK);
+            }
+        });
+    }
+
+    /* =============================
+       MARK ORDER READY
+    ============================== */
+
+    private void markReady() {
+
+        setLoading(true);
+
+        viewModel.readyOrder(order.getId()).observe(this, resource -> {
+
+            setLoading(false);
+
+            if (resource.status == Resource.Status.SUCCESS) {
+
+                order.setStatus("ready");
+
+                Toast.makeText(this,"Order Ready",Toast.LENGTH_SHORT).show();
+
+                setResult(RESULT_OK);
+
+                finish();
+            }
+        });
     }
 }

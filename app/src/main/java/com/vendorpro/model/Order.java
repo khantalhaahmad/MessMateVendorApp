@@ -1,21 +1,68 @@
 package com.vendorpro.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
 import java.util.List;
 
 public class Order implements Serializable {
+
+    /* =========================
+       ORDER ID
+    ========================= */
+
+    @SerializedName("_id")
     private String id;
+
+    /* =========================
+       CUSTOMER NAME
+    ========================= */
+
+    @SerializedName("customerName")
     private String customerName;
+
+    /* =========================
+       TOTAL PRICE
+    ========================= */
+
+    @SerializedName("total_price")
     private double totalAmount;
-    private String status; // PENDING, ACCEPTED, COMPLETED, REJECTED
+
+    /* =========================
+       STATUS
+    ========================= */
+
+    @SerializedName("status")
+    private String status;
+
+    /* =========================
+       CREATED TIME
+    ========================= */
+
+    @SerializedName("createdAt")
     private String createdAt;
+
+    /* =========================
+       ORDER ITEMS
+    ========================= */
+
+    @SerializedName("items")
     private List<OrderItem> items;
+
+    /* =========================
+       GETTERS
+    ========================= */
 
     public String getId() {
         return id;
     }
 
     public String getCustomerName() {
+
+        if (customerName == null || customerName.isEmpty()) {
+            return "Customer";
+        }
+
         return customerName;
     }
 
@@ -24,7 +71,10 @@ public class Order implements Serializable {
     }
 
     public String getStatus() {
-        return status;
+
+        if (status == null) return "PENDING";
+
+        return status.toUpperCase();
     }
 
     public void setStatus(String status) {
@@ -38,4 +88,5 @@ public class Order implements Serializable {
     public List<OrderItem> getItems() {
         return items;
     }
+
 }
