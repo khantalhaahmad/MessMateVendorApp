@@ -40,14 +40,32 @@ android {
 
 dependencies {
 
-    // ================= ANDROID CORE =================
+    /* ============================================================
+       ANDROID CORE
+    ============================================================ */
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'com.google.android.material:material:1.11.0'
 
-    // ================= FIREBASE =================
+    /* ============================================================
+       LIFECYCLE
+    ============================================================ */
+
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.6.2'
+
+    /* ============================================================
+       SWIPE REFRESH
+    ============================================================ */
+
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+
+    /* ============================================================
+       FIREBASE
+    ============================================================ */
 
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
 
@@ -55,27 +73,35 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-messaging'
 
-    // ================= NETWORK =================
+    /* ============================================================
+       NETWORK (RETROFIT + OKHTTP)
+    ============================================================ */
 
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
 
-    // ================= CHARTS (ANALYTICS) =================
+    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.11.0'
 
-    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    /* ============================================================
+       SOCKET.IO (REALTIME ORDERS)
+    ============================================================ */
 
-    // ================= LIFECYCLE =================
+    implementation ('io.socket:socket.io-client:2.1.0') {
+        exclude group: 'org.json', module: 'json'
+    }
 
-    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.6.2'
-
-    // ================= UI HELPERS =================
-
-    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-
-    // ================= IMAGE LOADING =================
+    /* ============================================================
+       IMAGE LOADING
+    ============================================================ */
 
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+
+    /* ============================================================
+       ANALYTICS CHARTS
+    ============================================================ */
+
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
 }

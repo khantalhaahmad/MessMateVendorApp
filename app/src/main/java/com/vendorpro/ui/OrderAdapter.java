@@ -19,28 +19,33 @@ import java.util.Locale;
 
 public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHolder> {
 
-    private List<Order> orders = new ArrayList<>();
+    private final List<Order> orders = new ArrayList<>();
 
-    public OrderAdapter(List<Order> orders) {
-        if (orders != null) {
-            this.orders = orders;
+    public OrderAdapter(List<Order> initialOrders) {
+
+        if (initialOrders != null) {
+            orders.addAll(initialOrders);
         }
     }
 
-    /* =============================
-       UPDATE LIST
-    ============================== */
+    /* ============================================================
+       UPDATE LIST (Efficient)
+    ============================================================ */
 
     public void updateOrders(List<Order> newOrders) {
 
-        this.orders.clear();
+        orders.clear();
 
         if (newOrders != null) {
-            this.orders.addAll(newOrders);
+            orders.addAll(newOrders);
         }
 
         notifyDataSetChanged();
     }
+
+    /* ============================================================
+       CREATE VIEW HOLDER
+    ============================================================ */
 
     @NonNull
     @Override
@@ -55,6 +60,10 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         return new OrderViewHolder(view);
     }
 
+    /* ============================================================
+       BIND VIEW HOLDER
+    ============================================================ */
+
     @Override
     public void onBindViewHolder(
             @NonNull OrderViewHolder holder,
@@ -62,9 +71,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         Order order = orders.get(position);
 
-        /* =============================
+        /* -----------------------------
            CUSTOMER NAME
-        ============================== */
+        ----------------------------- */
 
         String customerName =
                 order.getCustomerName() != null
@@ -73,75 +82,125 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         holder.tvCustomerName.setText(customerName);
 
-        /* =============================
+        /* -----------------------------
            ORDER ID
-        ============================== */
+        ----------------------------- */
 
-        String orderId = "N/A";
+        String shortId = "N/A";
 
         if (order.getId() != null && !order.getId().isEmpty()) {
 
-            orderId = order.getId()
-                    .substring(0,
-                            Math.min(order.getId().length(), 8));
-
+            shortId = order.getId().substring(
+                    0,
+                    Math.min(order.getId().length(), 8)
+            );
         }
 
-        holder.tvOrderId.setText("#" + orderId);
+        holder.tvOrderId.setText("#" + shortId);
 
-        /* =============================
+        /* -----------------------------
            DATE
-        ============================== */
+        ----------------------------- */
 
-        holder.tvOrderDate.setText(
+        String date =
                 order.getCreatedAt() != null
                         ? order.getCreatedAt()
-                        : "-"
-        );
+                        : "-";
 
-        /* =============================
+        holder.tvOrderDate.setText(date);
+
+        /* -----------------------------
            AMOUNT
-        ============================== */
+        ----------------------------- */
+
+        double amount = order.getTotalAmount();
 
         holder.tvTotalAmount.setText(
-
                 String.format(
                         Locale.getDefault(),
                         "₹%.2f",
-                        order.getTotalAmount()
+                        amount
                 )
-
         );
 
-        /* =============================
+        /* -----------------------------
            STATUS
-        ============================== */
+        ----------------------------- */
 
-        String status = order.getStatus();
+        String status =
+                order.getStatus() != null
+                        ? order.getStatus()
+                        : "pending";
 
-        holder.tvStatus.setText(status);
+        holder.tvStatus.setText(status.toUpperCase());
 
-        if ("pending".equalsIgnoreCase(status)) {
+        switch (status.toLowerCase()) {
 
-            holder.tvStatus.setTextColor(Color.parseColor("#FF9800"));
+            case "pending":
 
-        } else if ("accepted".equalsIgnoreCase(status)) {
+                holder.tvStatus.setTextColor(
+                        Color.parseColor("#FF9800")
+                );
 
-            holder.tvStatus.setTextColor(Color.parseColor("#2196F3"));
+                break;
 
-        } else if ("ready".equalsIgnoreCase(status)) {
+            case "accepted":
 
-            holder.tvStatus.setTextColor(Color.parseColor("#4CAF50"));
+                holder.tvStatus.setTextColor(
+                        Color.parseColor("#2196F3")
+                );
 
-        } else {
+                break;
 
-            holder.tvStatus.setTextColor(Color.GRAY);
+            case "preparing":
+
+                holder.tvStatus.setTextColor(
+                        Color.parseColor("#9C27B0")
+                );
+
+                break;
+
+            case "ready":
+
+                holder.tvStatus.setTextColor(
+                        Color.parseColor("#4CAF50")
+                );
+
+                break;
+
+            case "picked":
+
+                holder.tvStatus.setTextColor(
+                        Color.parseColor("#3F51B5")
+                );
+
+                break;
+
+            case "delivered":
+
+                holder.tvStatus.setTextColor(
+                        Color.parseColor("#2E7D32")
+                );
+
+                break;
+
+            case "cancelled":
+
+                holder.tvStatus.setTextColor(
+                        Color.parseColor("#F44336")
+                );
+
+                break;
+
+            default:
+
+                holder.tvStatus.setTextColor(Color.GRAY);
 
         }
 
-        /* =============================
-           CLICK → ORDER DETAILS
-        ============================== */
+        /* -----------------------------
+           OPEN ORDER DETAILS
+        ----------------------------- */
 
         holder.itemView.setOnClickListener(v -> {
 
@@ -158,14 +217,18 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     }
 
+    /* ============================================================
+       ITEM COUNT
+    ============================================================ */
+
     @Override
     public int getItemCount() {
         return orders.size();
     }
 
-    /* =============================
+    /* ============================================================
        VIEW HOLDER
-    ============================== */
+    ============================================================ */
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
 

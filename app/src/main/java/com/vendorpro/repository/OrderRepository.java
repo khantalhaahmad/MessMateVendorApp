@@ -27,17 +27,16 @@ public class OrderRepository {
                 .create(OrderService.class);
     }
 
-    /* =============================
+    /* ============================================================
        GET ORDERS
-    ============================== */
+    ============================================================ */
 
     public MutableLiveData<Resource<List<Order>>> getOrders(
             String ownerId,
             String status
     ) {
 
-        MutableLiveData<Resource<List<Order>>> liveData =
-                new MutableLiveData<>();
+        MutableLiveData<Resource<List<Order>>> liveData = new MutableLiveData<>();
 
         liveData.setValue(Resource.loading(null));
 
@@ -55,20 +54,14 @@ public class OrderRepository {
                                 && response.body().getOrders() != null) {
 
                             liveData.setValue(
-                                    Resource.success(
-                                            response.body().getOrders()
-                                    )
+                                    Resource.success(response.body().getOrders())
                             );
 
                         } else {
 
                             liveData.setValue(
-                                    Resource.error(
-                                            "No orders found",
-                                            null
-                                    )
+                                    Resource.error("No orders found", null)
                             );
-
                         }
 
                     }
@@ -80,10 +73,7 @@ public class OrderRepository {
                     ) {
 
                         liveData.setValue(
-                                Resource.error(
-                                        t.getMessage(),
-                                        null
-                                )
+                                Resource.error(t.getMessage(), null)
                         );
 
                     }
@@ -93,24 +83,23 @@ public class OrderRepository {
         return liveData;
     }
 
-    /* =============================
+    /* ============================================================
        ACCEPT ORDER
-    ============================== */
+    ============================================================ */
 
     public MutableLiveData<Resource<Boolean>> acceptOrder(String orderId) {
 
-        MutableLiveData<Resource<Boolean>> liveData =
-                new MutableLiveData<>();
+        MutableLiveData<Resource<Boolean>> liveData = new MutableLiveData<>();
 
         liveData.setValue(Resource.loading(null));
 
         orderService.acceptOrder(orderId)
-                .enqueue(new Callback<Order>() {
+                .enqueue(new Callback<OrderResponse>() {
 
                     @Override
                     public void onResponse(
-                            Call<Order> call,
-                            Response<Order> response
+                            Call<OrderResponse> call,
+                            Response<OrderResponse> response
                     ) {
 
                         if (response.isSuccessful()) {
@@ -123,19 +112,17 @@ public class OrderRepository {
                                     Resource.error("Accept failed", false)
                             );
                         }
-
                     }
 
                     @Override
                     public void onFailure(
-                            Call<Order> call,
+                            Call<OrderResponse> call,
                             Throwable t
                     ) {
 
                         liveData.setValue(
                                 Resource.error(t.getMessage(), false)
                         );
-
                     }
 
                 });
@@ -143,24 +130,23 @@ public class OrderRepository {
         return liveData;
     }
 
-    /* =============================
+    /* ============================================================
        REJECT ORDER
-    ============================== */
+    ============================================================ */
 
     public MutableLiveData<Resource<Boolean>> rejectOrder(String orderId) {
 
-        MutableLiveData<Resource<Boolean>> liveData =
-                new MutableLiveData<>();
+        MutableLiveData<Resource<Boolean>> liveData = new MutableLiveData<>();
 
         liveData.setValue(Resource.loading(null));
 
         orderService.rejectOrder(orderId)
-                .enqueue(new Callback<Order>() {
+                .enqueue(new Callback<OrderResponse>() {
 
                     @Override
                     public void onResponse(
-                            Call<Order> call,
-                            Response<Order> response
+                            Call<OrderResponse> call,
+                            Response<OrderResponse> response
                     ) {
 
                         if (response.isSuccessful()) {
@@ -173,19 +159,17 @@ public class OrderRepository {
                                     Resource.error("Reject failed", false)
                             );
                         }
-
                     }
 
                     @Override
                     public void onFailure(
-                            Call<Order> call,
+                            Call<OrderResponse> call,
                             Throwable t
                     ) {
 
                         liveData.setValue(
                                 Resource.error(t.getMessage(), false)
                         );
-
                     }
 
                 });
@@ -193,24 +177,23 @@ public class OrderRepository {
         return liveData;
     }
 
-    /* =============================
+    /* ============================================================
        PREPARING ORDER
-    ============================== */
+    ============================================================ */
 
     public MutableLiveData<Resource<Boolean>> preparingOrder(String orderId) {
 
-        MutableLiveData<Resource<Boolean>> liveData =
-                new MutableLiveData<>();
+        MutableLiveData<Resource<Boolean>> liveData = new MutableLiveData<>();
 
         liveData.setValue(Resource.loading(null));
 
         orderService.preparingOrder(orderId)
-                .enqueue(new Callback<Order>() {
+                .enqueue(new Callback<OrderResponse>() {
 
                     @Override
                     public void onResponse(
-                            Call<Order> call,
-                            Response<Order> response
+                            Call<OrderResponse> call,
+                            Response<OrderResponse> response
                     ) {
 
                         if (response.isSuccessful()) {
@@ -223,19 +206,17 @@ public class OrderRepository {
                                     Resource.error("Preparing failed", false)
                             );
                         }
-
                     }
 
                     @Override
                     public void onFailure(
-                            Call<Order> call,
+                            Call<OrderResponse> call,
                             Throwable t
                     ) {
 
                         liveData.setValue(
                                 Resource.error(t.getMessage(), false)
                         );
-
                     }
 
                 });
@@ -243,24 +224,23 @@ public class OrderRepository {
         return liveData;
     }
 
-    /* =============================
+    /* ============================================================
        READY ORDER
-    ============================== */
+    ============================================================ */
 
     public MutableLiveData<Resource<Boolean>> readyOrder(String orderId) {
 
-        MutableLiveData<Resource<Boolean>> liveData =
-                new MutableLiveData<>();
+        MutableLiveData<Resource<Boolean>> liveData = new MutableLiveData<>();
 
         liveData.setValue(Resource.loading(null));
 
         orderService.readyOrder(orderId)
-                .enqueue(new Callback<Order>() {
+                .enqueue(new Callback<OrderResponse>() {
 
                     @Override
                     public void onResponse(
-                            Call<Order> call,
-                            Response<Order> response
+                            Call<OrderResponse> call,
+                            Response<OrderResponse> response
                     ) {
 
                         if (response.isSuccessful()) {
@@ -273,19 +253,17 @@ public class OrderRepository {
                                     Resource.error("Ready failed", false)
                             );
                         }
-
                     }
 
                     @Override
                     public void onFailure(
-                            Call<Order> call,
+                            Call<OrderResponse> call,
                             Throwable t
                     ) {
 
                         liveData.setValue(
                                 Resource.error(t.getMessage(), false)
                         );
-
                     }
 
                 });

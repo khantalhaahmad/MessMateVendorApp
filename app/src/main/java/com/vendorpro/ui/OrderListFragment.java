@@ -1,6 +1,9 @@
 package com.vendorpro.ui;
 
+import android.content.Context;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +21,16 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.vendorpro.R;
 import com.vendorpro.model.Order;
 import com.vendorpro.network.Resource;
+import com.vendorpro.network.SocketManager;
 import com.vendorpro.network.TokenManager;
 import com.vendorpro.viewmodel.OrderViewModel;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import io.socket.client.Socket;
 
 public class OrderListFragment extends Fragment {
 
@@ -38,6 +46,12 @@ public class OrderListFragment extends Fragment {
     private ProgressBar progressBar;
     private TextView tvEmpty;
     private SwipeRefreshLayout swipeRefreshLayout;
+
+    /* =========================================
+       SOCKET
+    ========================================== */
+
+    private Socket socket;
 
     public static OrderListFragment newInstance(String status) {
 
@@ -99,6 +113,30 @@ public class OrderListFragment extends Fragment {
         ownerId = TokenManager
                 .getInstance(requireContext())
                 .getUserId();
+
+        /* =========================================
+           SOCKET SETUP
+        ========================================== */
+
+        socket = SocketManager.getSocket();
+
+        socket.connect();
+
+        socket.emit("join_owner", ownerId);
+
+        socket.on("new_order", args -> {
+
+            if (getActivity() == null) return;
+
+            getActivity().runOnUiThread(() -> {
+
+                playOrderAlert();
+
+                loadOrders(); // refresh orders
+
+            });
+
+        });
 
         loadOrders();
 
@@ -200,5 +238,47 @@ public class OrderListFragment extends Fragment {
 
         recyclerView.setVisibility(View.GONE);
         tvEmpty.setVisibility(View.VISIBLE);
+    }
+
+    /* =========================================
+       ORDER ALERT
+    ========================================== */
+
+    private void playOrderAlert() {
+
+        try {
+
+            MediaPlayer mp = MediaPlayer.create(
+                    requireContext(),
+                    R.raw.new_order
+            );
+
+            mp.start();
+
+            Vibrator v = (Vibrator) requireContext()
+                    .getSystemService(Context.VIBRATOR_SERVICE);
+
+            if (v != null) v.vibrate(1500);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+
+    /* =========================================
+       SOCKET CLEANUP
+    ========================================== */
+
+    @Override
+    public void onDestroyView() {
+
+        super.onDestroyView();
+
+        if (socket != null) {
+
+            socket.off("new_order");
+
+        }
     }
 }

@@ -2,20 +2,39 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- 🌐 Network / Backend -->
+    <!-- ============================================================
+         NETWORK
+    ============================================================ -->
+
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-- 🔔 Required for OTP shake vibration -->
+    <!-- ============================================================
+         VIBRATION (ORDER ALERT)
+    ============================================================ -->
+
     <uses-permission android:name="android.permission.VIBRATE"/>
 
-    <!-- 📷 IMAGE ACCESS (for menu image upload) -->
+    <!-- ============================================================
+         NOTIFICATION (Android 13+)
+    ============================================================ -->
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+    <!-- ============================================================
+         IMAGE ACCESS
+    ============================================================ -->
 
     <!-- Android 12 and below -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"/>
 
     <!-- Android 13+ -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+
+    <!-- ============================================================
+         APPLICATION
+    ============================================================ -->
 
     <application
         android:allowBackup="true"
@@ -28,9 +47,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.VendorPro"
-        tools:targetApi="31">
+        tools:targetApi="33">
 
-        <!-- 🚀 SPLASH (APP ENTRY POINT) -->
+        <!-- ============================================================
+             SPLASH SCREEN
+        ============================================================ -->
+
         <activity
             android:name=".ui.SplashActivity"
             android:exported="true"
@@ -43,57 +65,74 @@
 
         </activity>
 
-        <!-- 🟣 AUTH LANDING -->
+        <!-- ============================================================
+             AUTH
+        ============================================================ -->
+
         <activity
             android:name=".ui.AuthLandingActivity"
             android:exported="false"/>
 
-        <!-- 📱 LOGIN -->
         <activity
             android:name=".ui.LoginActivity"
             android:exported="false"/>
 
-        <!-- 🔐 OTP VERIFY -->
         <activity
             android:name=".ui.OtpActivity"
             android:exported="false"/>
 
-        <!-- 🏠 DASHBOARD -->
+        <!-- ============================================================
+             DASHBOARD
+        ============================================================ -->
+
         <activity
             android:name=".ui.DashboardActivity"
             android:exported="false"/>
 
-        <!-- 🍽 MENU -->
+        <!-- ============================================================
+             MENU MANAGEMENT
+        ============================================================ -->
+
         <activity
             android:name=".ui.MenuActivity"
             android:exported="false"/>
 
-        <!-- 📦 ORDERS -->
-        <activity
-            android:name=".ui.OrdersActivity"
-            android:exported="false"/>
-
-        <!-- 📄 ORDER DETAIL -->
-        <activity
-            android:name=".ui.OrderDetailActivity"
-            android:exported="false"/>
-
-        <!-- ➕ ADD / ✏️ EDIT MENU ITEM -->
         <activity
             android:name=".ui.AddEditMenuItemActivity"
             android:exported="false"/>
 
-        <!-- 📊 ANALYTICS -->
+        <!-- ============================================================
+             ORDERS
+        ============================================================ -->
+
+        <activity
+            android:name=".ui.OrdersActivity"
+            android:exported="false"/>
+
+        <activity
+            android:name=".ui.OrderDetailActivity"
+            android:exported="false"/>
+
+        <!-- ============================================================
+             ANALYTICS
+        ============================================================ -->
+
         <activity
             android:name=".ui.AnalyticsActivity"
             android:exported="false"/>
 
-        <!-- 💰 PAYOUTS -->
+        <!-- ============================================================
+             PAYOUTS
+        ============================================================ -->
+
         <activity
             android:name=".ui.PayoutsActivity"
             android:exported="false"/>
 
-        <!-- 🔔 FIREBASE FCM SERVICE -->
+        <!-- ============================================================
+             FIREBASE CLOUD MESSAGING
+        ============================================================ -->
+
         <service
             android:name=".MyFirebaseMessagingService"
             android:exported="false">
