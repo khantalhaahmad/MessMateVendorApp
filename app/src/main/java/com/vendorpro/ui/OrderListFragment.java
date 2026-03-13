@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.gson.Gson;
 import com.vendorpro.R;
 import com.vendorpro.model.Order;
 import com.vendorpro.network.Resource;
@@ -46,10 +47,6 @@ public class OrderListFragment extends Fragment {
     private ProgressBar progressBar;
     private TextView tvEmpty;
     private SwipeRefreshLayout swipeRefreshLayout;
-
-    /* =========================================
-       SOCKET
-    ========================================== */
 
     private Socket socket;
 
@@ -114,29 +111,7 @@ public class OrderListFragment extends Fragment {
                 .getInstance(requireContext())
                 .getUserId();
 
-        /* =========================================
-           SOCKET SETUP
-        ========================================== */
-
-        socket = SocketManager.getSocket();
-
-        socket.connect();
-
-        socket.emit("join_owner", ownerId);
-
-        socket.on("new_order", args -> {
-
-            if (getActivity() == null) return;
-
-            getActivity().runOnUiThread(() -> {
-
-                playOrderAlert();
-
-                loadOrders(); // refresh orders
-
-            });
-
-        });
+        setupSocket();
 
         loadOrders();
 
@@ -144,13 +119,129 @@ public class OrderListFragment extends Fragment {
     }
 
     /* =========================================
-       REFRESH WHEN USER RETURNS FROM DETAIL
+       SOCKET SETUP
     ========================================== */
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        loadOrders();
+    private void setupSocket() {
+
+        socket = SocketManager.getSocket();
+
+        if (socket == null) return;
+
+        SocketManager.connect();
+        SocketManager.joinOwner(ownerId);
+
+        /* ================================
+           NEW ORDER EVENT
+        ================================= */
+
+        SocketManager.on("new_order", args -> {
+
+            if(getActivity()==null) return;
+
+            getActivity().runOnUiThread(() -> {
+
+                try{
+
+                    playOrderAlert();
+
+                    if(args.length == 0) return;
+
+                    JSONObject data = (JSONObject) args[0];
+
+                    Order order = new Gson()
+                            .fromJson(data.toString(), Order.class);
+
+                    showNewOrderDialog(order);
+
+                    // IMPORTANT: refresh list
+                    loadOrders();
+
+                }catch(Exception e){
+
+                    e.printStackTrace();
+
+                }
+
+            });
+
+        });
+
+        /* ================================
+           AUTO CANCEL EVENT
+        ================================= */
+
+        SocketManager.on("order_auto_cancelled", args -> {
+
+            if(getActivity()==null) return;
+
+            getActivity().runOnUiThread(this::loadOrders);
+
+        });
+
+        /* ================================
+           ORDER STATUS UPDATE
+        ================================= */
+
+        SocketManager.on("order_status", args -> {
+
+            if(getActivity()==null) return;
+
+            getActivity().runOnUiThread(this::loadOrders);
+
+        });
+
+    }
+
+    /* =========================================
+       SHOW NEW ORDER POPUP
+    ========================================== */
+
+    private void showNewOrderDialog(Order order){
+
+        if(order == null) return;
+
+        NewOrderDialog dialog = new NewOrderDialog(
+                requireContext(),
+                order,
+                new NewOrderDialog.Listener() {
+
+                    @Override
+                    public void onAccept(Order order) {
+
+                        viewModel.acceptOrder(order.getId())
+                                .observe(getViewLifecycleOwner(), r -> {
+
+                                    if(r.status == Resource.Status.SUCCESS){
+
+                                        loadOrders();
+
+                                    }
+
+                                });
+
+                    }
+
+                    @Override
+                    public void onReject(Order order) {
+
+                        viewModel.rejectOrder(order.getId())
+                                .observe(getViewLifecycleOwner(), r -> {
+
+                                    if(r.status == Resource.Status.SUCCESS){
+
+                                        loadOrders();
+
+                                    }
+
+                                });
+
+                    }
+                }
+        );
+
+        dialog.show();
+
     }
 
     /* =========================================
@@ -167,55 +258,33 @@ public class OrderListFragment extends Fragment {
 
         progressBar.setVisibility(View.VISIBLE);
 
-        viewModel.getOrders(ownerId, null)
+        System.out.println("Fragment loading orders");
+        System.out.println("OwnerId: " + ownerId);
+        System.out.println("Status: " + status);
+
+        viewModel.getOrders(ownerId, status)
                 .observe(getViewLifecycleOwner(), resource -> {
 
                     progressBar.setVisibility(View.GONE);
                     swipeRefreshLayout.setRefreshing(false);
 
-                    if (resource == null || resource.data == null) {
+                    if(resource == null){
 
                         showEmpty();
                         return;
                     }
 
-                    filterAndShowOrders(resource.data);
+                    if(resource.status == Resource.Status.SUCCESS
+                            && resource.data != null){
+
+                        showOrders(resource.data);
+
+                    }else{
+
+                        showEmpty();
+                    }
 
                 });
-    }
-
-    /* =========================================
-       FILTER ORDERS BY TAB STATUS
-    ========================================== */
-
-    private void filterAndShowOrders(List<Order> orders) {
-
-        List<Order> filtered = new ArrayList<>();
-
-        String[] statuses = status.split(",");
-
-        for (Order order : orders) {
-
-            if (order.getStatus() == null) continue;
-
-            for (String s : statuses) {
-
-                if (order.getStatus().equalsIgnoreCase(s.trim())) {
-
-                    filtered.add(order);
-                    break;
-                }
-            }
-        }
-
-        if (filtered.isEmpty()) {
-
-            showEmpty();
-
-        } else {
-
-            showOrders(filtered);
-        }
     }
 
     /* =========================================
@@ -223,6 +292,12 @@ public class OrderListFragment extends Fragment {
     ========================================== */
 
     private void showOrders(List<Order> orders) {
+
+        if(orders == null || orders.isEmpty()){
+
+            showEmpty();
+            return;
+        }
 
         adapter.updateOrders(orders);
 
@@ -234,36 +309,49 @@ public class OrderListFragment extends Fragment {
        EMPTY STATE
     ========================================== */
 
-    private void showEmpty() {
+    private void showEmpty(){
 
         recyclerView.setVisibility(View.GONE);
         tvEmpty.setVisibility(View.VISIBLE);
     }
 
     /* =========================================
-       ORDER ALERT
+       ALERT SOUND
     ========================================== */
 
-    private void playOrderAlert() {
+    private void playOrderAlert(){
 
-        try {
+        try{
 
-            MediaPlayer mp = MediaPlayer.create(
-                    requireContext(),
-                    R.raw.new_order
-            );
+            MediaPlayer mp = MediaPlayer.create(requireContext(),R.raw.new_order);
+
+            mp.setOnCompletionListener(MediaPlayer::release);
 
             mp.start();
 
             Vibrator v = (Vibrator) requireContext()
                     .getSystemService(Context.VIBRATOR_SERVICE);
 
-            if (v != null) v.vibrate(1500);
+            if(v!=null){
+                v.vibrate(1200);
+            }
 
-        } catch (Exception e) {
+        }catch(Exception e){
 
             e.printStackTrace();
+
         }
+
+    }
+
+    /* =========================================
+       REFRESH WHEN BACK
+    ========================================== */
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadOrders();
     }
 
     /* =========================================
@@ -275,10 +363,10 @@ public class OrderListFragment extends Fragment {
 
         super.onDestroyView();
 
-        if (socket != null) {
+        SocketManager.off("new_order");
+        SocketManager.off("order_auto_cancelled");
+        SocketManager.off("order_status");
 
-            socket.off("new_order");
-
-        }
     }
+
 }

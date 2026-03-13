@@ -4,26 +4,121 @@ import java.util.List;
 
 public class AnalyticsResponse {
 
-    public String messId;
+    private String messId;
 
-    public int totalOrders;
+    private int totalOrders;
 
-    public double totalRevenue;
+    private double totalRevenue;
 
-    public double averageOrderValue;   // NEW
+    private double averageOrderValue;
 
-    public int activeCustomers;
+    private int activeCustomers;
 
-    public double avgRating;
+    private double avgRating;
 
-    public List<Integer> weeklyOrders;
+    private List<Integer> weeklyOrders;
 
-    public List<Integer> monthlyRevenue;
+    private List<Integer> monthlyRevenue;
 
-    public List<String> weeklyLabels;
+    private List<String> weeklyLabels;
 
-    public List<String> monthlyLabels;
+    private List<String> monthlyLabels;
 
-    public List<TopItem> topItems;     // NEW
+    private List<TopItem> topItems;
 
+    /* =========================
+       GETTERS
+    ========================= */
+
+    public String getMessId() {
+        return messId;
+    }
+
+    public int getTotalOrders() {
+        return totalOrders;
+    }
+
+    public double getTotalRevenue() {
+        return totalRevenue;
+    }
+
+    public double getAverageOrderValue() {
+        return averageOrderValue;
+    }
+
+    public int getActiveCustomers() {
+        return activeCustomers;
+    }
+
+    public double getAvgRating() {
+        return avgRating;
+    }
+
+    public List<Integer> getWeeklyOrders() {
+        return weeklyOrders;
+    }
+
+    public List<Integer> getMonthlyRevenue() {
+        return monthlyRevenue;
+    }
+
+    public List<String> getWeeklyLabels() {
+        return weeklyLabels;
+    }
+
+    public List<String> getMonthlyLabels() {
+        return monthlyLabels;
+    }
+
+    public List<TopItem> getTopItems() {
+        return topItems;
+    }
+
+    /* =========================
+       SETTERS
+    ========================= */
+
+    public void setMessId(String messId) {
+        this.messId = messId;
+    }
+
+    public void setTotalOrders(int totalOrders) {
+        this.totalOrders = totalOrders;
+    }
+
+    public void setTotalRevenue(double totalRevenue) {
+        this.totalRevenue = totalRevenue;
+    }
+
+    public void setAverageOrderValue(double averageOrderValue) {
+        this.averageOrderValue = averageOrderValue;
+    }
+
+    public void setActiveCustomers(int activeCustomers) {
+        this.activeCustomers = activeCustomers;
+    }
+
+    public void setAvgRating(double avgRating) {
+        this.avgRating = avgRating;
+    }
+
+    public void setWeeklyOrders(List<Integer> weeklyOrders) {
+        this.weeklyOrders = weeklyOrders;
+    }
+
+    public void setMonthlyRevenue(List<Integer> monthlyRevenue) {
+        this.monthlyRevenue = monthlyRevenue;
+    }
+
+    public void setWeeklyLabels(List<String> weeklyLabels) {
+        this.weeklyLabels = weeklyLabels;
+    }
+
+    public void setMonthlyLabels(List<String> monthlyLabels) {
+        this.monthlyLabels = monthlyLabels;
+    }
+
+    public void setTopItems(List<TopItem> topItems) {
+        this.topItems = topItems;
+    }
 }

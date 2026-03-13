@@ -100,16 +100,16 @@ public class AnalyticsActivity extends BaseActivity {
 
             updateCards(data);
 
-            if (data.weeklyOrders != null && !data.weeklyOrders.isEmpty()) {
-                setWeeklyChart(data.weeklyOrders);
+            if (data.getWeeklyOrders() != null && !data.getWeeklyOrders().isEmpty()) {
+                setWeeklyChart(data.getWeeklyOrders());
             }
 
-            if (data.monthlyRevenue != null && !data.monthlyRevenue.isEmpty()) {
-                setRevenueChart(data.monthlyRevenue);
+            if (data.getMonthlyRevenue() != null && !data.getMonthlyRevenue().isEmpty()) {
+                setRevenueChart(data.getMonthlyRevenue());
             }
 
-            if (data.topItems != null && !data.topItems.isEmpty()) {
-                showTopItems(data.topItems);
+            if (data.getTopItems() != null && !data.getTopItems().isEmpty()) {
+                showTopItems(data.getTopItems());
             }
 
         });
@@ -118,19 +118,19 @@ public class AnalyticsActivity extends BaseActivity {
     private void updateCards(AnalyticsResponse data) {
 
         tvRevenue.setText(
-                String.format(Locale.getDefault(),"₹%.2f",data.totalRevenue)
+                String.format(Locale.getDefault(),"₹%.2f",data.getTotalRevenue())
         );
 
-        tvOrders.setText(String.valueOf(data.totalOrders));
+        tvOrders.setText(String.valueOf(data.getTotalOrders()));
 
-        tvCustomers.setText(String.valueOf(data.activeCustomers));
+        tvCustomers.setText(String.valueOf(data.getActiveCustomers()));
 
         tvRating.setText(
-                String.format(Locale.getDefault(),"%.1f ⭐",data.avgRating)
+                String.format(Locale.getDefault(),"%.1f ⭐",data.getAvgRating())
         );
 
         tvAverageOrderValue.setText(
-                String.format(Locale.getDefault(),"₹%.2f",data.averageOrderValue)
+                String.format(Locale.getDefault(),"₹%.2f",data.getAverageOrderValue())
         );
     }
 

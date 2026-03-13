@@ -15,7 +15,10 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- TOP -->
+        <!-- =============================
+             TOP ROW
+        ============================== -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -31,12 +34,26 @@
                 android:textSize="16sp"/>
 
             <TextView
+                android:id="@+id/tvOrderTimer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="60s"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="#FF3B30"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
                 android:id="@+id/tvOrderId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="#123456"
                 android:textColor="#777"/>
         </LinearLayout>
+
+        <!-- =============================
+             ORDER TIME
+        ============================== -->
 
         <TextView
             android:id="@+id/tvOrderDate"
@@ -47,12 +64,16 @@
             android:textColor="#999"
             android:layout_marginTop="2dp"/>
 
-        <!-- STATUS + PRICE -->
+        <!-- =============================
+             STATUS + PRICE
+        ============================== -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/tvStatus"

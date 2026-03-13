@@ -1,26 +1,48 @@
 package com.vendorpro.model;
 
+import com.google.gson.annotations.SerializedName;
+import java.util.ArrayList;
 import java.util.List;
 
 public class DashboardStats {
 
     /* -----------------------------
-       Mess
+       Mess Info
     ------------------------------ */
 
-    private String messId;
+    @SerializedName("messId")
+    private String messId = "";
+
+    @SerializedName("messName")
+    private String messName = "";
+
+    @SerializedName("isOpen")
+    private boolean isOpen = false;
 
     public String getMessId() {
         return messId;
+    }
+
+    public String getMessName() {
+        return messName;
+    }
+
+    public boolean isOpen() {
+        return isOpen;
     }
 
     /* -----------------------------
        DASHBOARD (Today Stats)
     ------------------------------ */
 
-    private int ordersToday;
-    private double revenueToday;
-    private int customersToday;
+    @SerializedName("ordersToday")
+    private int ordersToday = 0;
+
+    @SerializedName("revenueToday")
+    private double revenueToday = 0;
+
+    @SerializedName("customersToday")
+    private int customersToday = 0;
 
     public int getOrdersToday() {
         return ordersToday;
@@ -35,13 +57,20 @@ public class DashboardStats {
     }
 
     /* -----------------------------
-       ANALYTICS
+       ANALYTICS TOTAL
     ------------------------------ */
 
-    private int totalOrders;
-    private double totalRevenue;
-    private int activeCustomers;
-    private float avgRating;
+    @SerializedName("totalOrders")
+    private int totalOrders = 0;
+
+    @SerializedName("totalRevenue")
+    private double totalRevenue = 0;
+
+    @SerializedName("activeCustomers")
+    private int activeCustomers = 0;
+
+    @SerializedName("avgRating")
+    private float avgRating = 0;
 
     public int getTotalOrders() {
         return totalOrders;
@@ -63,8 +92,11 @@ public class DashboardStats {
        CHART DATA
     ------------------------------ */
 
-    private List<Integer> weeklyOrders;
-    private List<Double> monthlyRevenue;
+    @SerializedName("weeklyOrders")
+    private List<Integer> weeklyOrders = new ArrayList<>();
+
+    @SerializedName("monthlyRevenue")
+    private List<Double> monthlyRevenue = new ArrayList<>();
 
     public List<Integer> getWeeklyOrders() {
         return weeklyOrders;
@@ -78,7 +110,8 @@ public class DashboardStats {
        RECENT ORDERS
     ------------------------------ */
 
-    private List<Order> recentOrders;
+    @SerializedName("recentOrders")
+    private List<Order> recentOrders = new ArrayList<>();
 
     public List<Order> getRecentOrders() {
         return recentOrders;

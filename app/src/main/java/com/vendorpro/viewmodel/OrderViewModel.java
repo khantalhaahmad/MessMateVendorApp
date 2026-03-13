@@ -21,9 +21,9 @@ public class OrderViewModel extends AndroidViewModel {
         repository = new OrderRepository(application);
     }
 
-    /* =============================
-       GET ORDERS
-    ============================== */
+    /* ============================================================
+       GET ORDERS BY STATUS
+    ============================================================ */
 
     public LiveData<Resource<List<Order>>> getOrders(
             String ownerId,
@@ -32,36 +32,68 @@ public class OrderViewModel extends AndroidViewModel {
         return repository.getOrders(ownerId, status);
     }
 
-    /* =============================
+    /* ============================================================
+       GET ALL ORDERS
+    ============================================================ */
+
+    public LiveData<Resource<List<Order>>> getAllOrders(String ownerId) {
+        return repository.getAllOrders(ownerId);
+    }
+
+    /* ============================================================
+       GET SINGLE ORDER
+    ============================================================ */
+
+    public LiveData<Resource<Order>> getOrderById(String orderId) {
+        return repository.getOrderById(orderId);
+    }
+
+    /* ============================================================
        ACCEPT ORDER
-    ============================== */
+    ============================================================ */
 
     public LiveData<Resource<Boolean>> acceptOrder(String orderId) {
         return repository.acceptOrder(orderId);
     }
 
-    /* =============================
+    /* ============================================================
        REJECT ORDER
-    ============================== */
+    ============================================================ */
 
     public LiveData<Resource<Boolean>> rejectOrder(String orderId) {
         return repository.rejectOrder(orderId);
     }
 
-    /* =============================
+    /* ============================================================
        PREPARING ORDER
-    ============================== */
+    ============================================================ */
 
     public LiveData<Resource<Boolean>> preparingOrder(String orderId) {
         return repository.preparingOrder(orderId);
     }
 
-    /* =============================
+    /* ============================================================
        READY ORDER
-    ============================== */
+    ============================================================ */
 
     public LiveData<Resource<Boolean>> readyOrder(String orderId) {
         return repository.readyOrder(orderId);
     }
 
+    /* ============================================================
+       DELIVERED ORDER (NEW)
+       ready → delivered
+    ============================================================ */
+
+    public LiveData<Resource<Boolean>> deliveredOrder(String orderId) {
+        return repository.deliveredOrder(orderId);
+    }
+
+    /* ============================================================
+       CANCEL ORDER
+    ============================================================ */
+
+    public LiveData<Resource<Boolean>> cancelOrder(String orderId) {
+        return repository.cancelOrder(orderId);
+    }
 }

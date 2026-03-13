@@ -2,6 +2,7 @@ package com.vendorpro.ui;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.vendorpro.R;
 import com.vendorpro.model.Order;
+import java.time.Instant;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -29,7 +33,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     }
 
     /* ============================================================
-       UPDATE LIST (Efficient)
+       UPDATE LIST
     ============================================================ */
 
     public void updateOrders(List<Order> newOrders) {
@@ -99,18 +103,29 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         holder.tvOrderId.setText("#" + shortId);
 
         /* -----------------------------
-           DATE
+           ORDER TIME
         ----------------------------- */
 
-        String date =
-                order.getCreatedAt() != null
-                        ? order.getCreatedAt()
-                        : "-";
+        String orderTime = "-";
 
-        holder.tvOrderDate.setText(date);
+        try {
+
+            if(order.getCreatedAt() != null){
+
+                Date date = new Date(order.getCreatedAt());
+
+                SimpleDateFormat sdf =
+                        new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+                orderTime = sdf.format(date);
+            }
+
+        } catch (Exception ignored){}
+
+        holder.tvOrderDate.setText(orderTime);
 
         /* -----------------------------
-           AMOUNT
+           TOTAL AMOUNT
         ----------------------------- */
 
         double amount = order.getTotalAmount();
@@ -142,6 +157,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                         Color.parseColor("#FF9800")
                 );
 
+                startTimer(holder, order);
                 break;
 
             case "accepted":
@@ -149,7 +165,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 holder.tvStatus.setTextColor(
                         Color.parseColor("#2196F3")
                 );
-
                 break;
 
             case "preparing":
@@ -157,7 +172,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 holder.tvStatus.setTextColor(
                         Color.parseColor("#9C27B0")
                 );
-
                 break;
 
             case "ready":
@@ -165,7 +179,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 holder.tvStatus.setTextColor(
                         Color.parseColor("#4CAF50")
                 );
-
                 break;
 
             case "picked":
@@ -173,7 +186,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 holder.tvStatus.setTextColor(
                         Color.parseColor("#3F51B5")
                 );
-
                 break;
 
             case "delivered":
@@ -181,7 +193,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 holder.tvStatus.setTextColor(
                         Color.parseColor("#2E7D32")
                 );
-
                 break;
 
             case "cancelled":
@@ -189,7 +200,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                 holder.tvStatus.setTextColor(
                         Color.parseColor("#F44336")
                 );
-
                 break;
 
             default:
@@ -218,6 +228,50 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     }
 
     /* ============================================================
+       ORDER TIMER (Pending Orders)
+    ============================================================ */
+
+    private void startTimer(OrderViewHolder holder, Order order){
+
+        if(order.getOrderExpiresAt() == null) return;
+
+        long expiresAt;
+
+        try{
+
+            Instant instant = Instant.parse(order.getOrderExpiresAt());
+            expiresAt = instant.toEpochMilli();
+
+        }catch(Exception e){
+            e.printStackTrace();
+            return;
+        }
+
+        long remaining = expiresAt - System.currentTimeMillis();
+
+        if(remaining <= 0) return;
+
+        new CountDownTimer(remaining,1000){
+
+            @Override
+            public void onTick(long millisUntilFinished){
+
+                long sec = millisUntilFinished / 1000;
+
+                holder.timer.setText(sec + "s");
+
+            }
+
+            @Override
+            public void onFinish(){
+
+                holder.timer.setText("Expired");
+
+            }
+
+        }.start();
+    }
+    /* ============================================================
        ITEM COUNT
     ============================================================ */
 
@@ -227,8 +281,8 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     }
 
     /* ============================================================
-       VIEW HOLDER
-    ============================================================ */
+   VIEW HOLDER
+============================================================ */
 
     static class OrderViewHolder extends RecyclerView.ViewHolder {
 
@@ -237,6 +291,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         TextView tvOrderDate;
         TextView tvTotalAmount;
         TextView tvStatus;
+        TextView timer;   // 🔥 countdown timer
 
         OrderViewHolder(@NonNull View itemView) {
 
@@ -247,6 +302,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             tvOrderDate = itemView.findViewById(R.id.tvOrderDate);
             tvTotalAmount = itemView.findViewById(R.id.tvTotalAmount);
             tvStatus = itemView.findViewById(R.id.tvStatus);
+
+            // ⏱ Order accept timer (60 sec)
+            timer = itemView.findViewById(R.id.tvOrderTimer);
         }
     }
 }

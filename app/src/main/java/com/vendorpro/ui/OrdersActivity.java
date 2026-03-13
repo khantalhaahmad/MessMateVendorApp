@@ -10,12 +10,17 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.vendorpro.R;
+import com.vendorpro.network.SocketManager;
+
+import io.socket.client.Socket;
 
 public class OrdersActivity extends AppCompatActivity {
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private OrdersPagerAdapter adapter;
+
+    private Socket socket;
 
     public static final int ORDER_DETAIL_REQUEST = 101;
 
@@ -28,7 +33,12 @@ public class OrdersActivity extends AppCompatActivity {
         initializeViews();
         setupViewPager();
         setupTabs();
+        setupSocket();
     }
+
+    /* =========================================
+       INITIALIZE VIEWS
+    ========================================== */
 
     private void initializeViews() {
 
@@ -37,9 +47,9 @@ public class OrdersActivity extends AppCompatActivity {
 
     }
 
-    /* =============================
+    /* =========================================
        SETUP VIEWPAGER
-    ============================== */
+    ========================================== */
 
     private void setupViewPager() {
 
@@ -48,13 +58,13 @@ public class OrdersActivity extends AppCompatActivity {
         viewPager.setAdapter(adapter);
 
         // preload all tabs
-        viewPager.setOffscreenPageLimit(3);
+        viewPager.setOffscreenPageLimit(4);
 
     }
 
-    /* =============================
+    /* =========================================
        SETUP TABS
-    ============================== */
+    ========================================== */
 
     private void setupTabs() {
 
@@ -80,6 +90,11 @@ public class OrdersActivity extends AppCompatActivity {
                             tab.setIcon(R.drawable.ic_ready);
                             break;
 
+                        case 3:
+                            tab.setText("Completed");
+                            tab.setIcon(R.drawable.ic_delivered);
+                            break;
+
                     }
 
                 }
@@ -87,9 +102,23 @@ public class OrdersActivity extends AppCompatActivity {
 
     }
 
-    /* =============================
+    /* =========================================
+       SOCKET SETUP
+    ========================================== */
+
+    private void setupSocket() {
+
+        socket = SocketManager.getSocket();
+
+        if(socket == null) return;
+
+        SocketManager.connect();
+
+    }
+
+    /* =========================================
        REFRESH AFTER ORDER UPDATE
-    ============================== */
+    ========================================== */
 
     @Override
     protected void onResume() {
@@ -104,9 +133,9 @@ public class OrdersActivity extends AppCompatActivity {
 
     }
 
-    /* =============================
+    /* =========================================
        HANDLE RESULT FROM DETAIL
-    ============================== */
+    ========================================== */
 
     @Override
     protected void onActivityResult(
@@ -120,10 +149,37 @@ public class OrdersActivity extends AppCompatActivity {
         if (requestCode == ORDER_DETAIL_REQUEST
                 && resultCode == RESULT_OK) {
 
-            // refresh fragments
-            recreate();
+            refreshTabs();
 
         }
+
+    }
+
+    /* =========================================
+       REFRESH TABS
+    ========================================== */
+
+    private void refreshTabs() {
+
+        if(adapter != null){
+
+            adapter.notifyDataSetChanged();
+
+        }
+
+    }
+
+    /* =========================================
+       CLEANUP
+    ========================================== */
+
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
+
+        // keep socket alive for realtime updates
+        // do NOT disconnect here unless app logout
 
     }
 

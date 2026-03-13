@@ -4,6 +4,7 @@ import com.vendorpro.model.Order;
 import com.vendorpro.model.OrderResponse;
 
 import retrofit2.Call;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.Path;
@@ -19,6 +20,26 @@ public interface OrderService {
     Call<OrderResponse> getOrders(
             @Path("ownerId") String ownerId,
             @Query("status") String status
+    );
+
+    /* ============================================================
+       GET ALL OWNER ORDERS (NO FILTER)
+       Used for dashboard refresh / analytics
+    ============================================================ */
+
+    @GET("orders/owner/{ownerId}")
+    Call<OrderResponse> getAllOrders(
+            @Path("ownerId") String ownerId
+    );
+
+    /* ============================================================
+       GET SINGLE ORDER
+       Used for realtime popup / refresh
+    ============================================================ */
+
+    @GET("orders/{id}")
+    Call<Order> getOrderById(
+            @Path("id") String orderId
     );
 
     /* ============================================================
@@ -89,4 +110,5 @@ public interface OrderService {
     Call<OrderResponse> cancelOrder(
             @Path("id") String orderId
     );
+
 }

@@ -14,17 +14,21 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.*;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.google.gson.Gson;
+
 import com.vendorpro.R;
 import com.vendorpro.model.DashboardStats;
+import com.vendorpro.model.Order;
 import com.vendorpro.model.QuickAction;
+import com.vendorpro.model.ToggleResponse;
+import com.vendorpro.network.Resource;
+import com.vendorpro.network.SocketManager;
 import com.vendorpro.network.TokenManager;
 import com.vendorpro.viewmodel.DashboardViewModel;
 
-import android.util.Log;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +38,10 @@ public class DashboardActivity extends BaseActivity {
 
     private DashboardViewModel dashboardViewModel;
 
+    private TextView tvRestaurantName;
     private TextView tvTotalRevenue, tvTotalOrders, tvActiveCustomers, tvAverageRating;
     private TextView tvRestaurantStatus;
-    private View btnToggleStatus;
+    private TextView btnToggleStatus;
 
     private ProgressBar progressBar;
     private BarChart barChart;
@@ -46,8 +51,13 @@ public class DashboardActivity extends BaseActivity {
 
     private boolean isRestaurantOpen = true;
 
+    /* ============================================================
+       ACTIVITY CREATE
+    ============================================================ */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
@@ -59,10 +69,100 @@ public class DashboardActivity extends BaseActivity {
 
         loadDashboardData();
 
+        setupSocket();   // 🔥 REALTIME ORDER LISTENER
+
         swipeRefreshLayout.setOnRefreshListener(this::loadDashboardData);
     }
 
+    /* ============================================================
+       SOCKET SETUP
+    ============================================================ */
+
+    private void setupSocket(){
+
+        String ownerId = TokenManager.getInstance(this).getUserId();
+
+        if(ownerId == null) return;
+
+        SocketManager.connect();
+
+        SocketManager.joinOwner(ownerId);
+
+        SocketManager.on("new_order", args -> {
+
+            runOnUiThread(() -> {
+
+                try{
+
+                    JSONObject data = (JSONObject) args[0];
+
+                    Gson gson = new Gson();
+
+                    Order order = gson.fromJson(
+                            data.toString(),
+                            Order.class
+                    );
+
+                    showNewOrderPopup(order);
+
+                }catch(Exception e){
+
+                    e.printStackTrace();
+
+                }
+
+            });
+
+        });
+
+    }
+
+    /* ============================================================
+       NEW ORDER POPUP
+    ============================================================ */
+
+    private void showNewOrderPopup(Order order){
+
+        NewOrderDialog dialog =
+                new NewOrderDialog(
+                        this,
+                        order,
+                        new NewOrderDialog.Listener() {
+
+                            @Override
+                            public void onAccept(Order order) {
+
+                                android.widget.Toast.makeText(
+                                        DashboardActivity.this,
+                                        "Order Accepted",
+                                        android.widget.Toast.LENGTH_SHORT
+                                ).show();
+
+                            }
+
+                            @Override
+                            public void onReject(Order order) {
+
+                                android.widget.Toast.makeText(
+                                        DashboardActivity.this,
+                                        "Order Rejected",
+                                        android.widget.Toast.LENGTH_SHORT
+                                ).show();
+                            }
+
+                        }
+                );
+
+        dialog.show();
+    }
+
+    /* ============================================================
+       INITIALIZE VIEWS
+    ============================================================ */
+
     private void initializeViews() {
+
+        tvRestaurantName = findViewById(R.id.tvRestaurantName);
 
         tvTotalRevenue = findViewById(R.id.tvTotalRevenue);
         tvTotalOrders = findViewById(R.id.tvTotalOrders);
@@ -84,85 +184,93 @@ public class DashboardActivity extends BaseActivity {
         setupChartStyle();
     }
 
+    /* ============================================================
+       QUICK ACTIONS
+    ============================================================ */
+
     private void setupQuickActions() {
 
-        rvQuickActions.setLayoutManager(new GridLayoutManager(this, 4));
+        rvQuickActions.setLayoutManager(new GridLayoutManager(this,4));
 
         List<QuickAction> actions = new ArrayList<>();
 
-        actions.add(new QuickAction("Orders", R.drawable.ic_orders));
-        actions.add(new QuickAction("Menu", R.drawable.ic_menu));
-        actions.add(new QuickAction("Analytics", R.drawable.ic_analytics));
-        actions.add(new QuickAction("Payouts", R.drawable.ic_payout));
+        actions.add(new QuickAction("Orders",R.drawable.ic_orders));
+        actions.add(new QuickAction("Menu",R.drawable.ic_menu));
+        actions.add(new QuickAction("Analytics",R.drawable.ic_analytics));
+        actions.add(new QuickAction("Payouts",R.drawable.ic_payout));
 
         DashboardQuickActionAdapter adapter =
-                new DashboardQuickActionAdapter(actions, action -> {
+                new DashboardQuickActionAdapter(actions,action -> {
 
-                    switch (action.getTitle()) {
+                    switch (action.getTitle()){
 
                         case "Orders":
-                            startActivity(new Intent(this, OrdersActivity.class));
+                            startActivity(new Intent(this,OrdersActivity.class));
                             break;
 
                         case "Menu":
-                            startActivity(new Intent(this, MenuActivity.class));
+                            startActivity(new Intent(this,MenuActivity.class));
                             break;
 
                         case "Analytics":
 
                             String vendorId = TokenManager.getInstance(this).getUserId();
 
-                            Intent analyticsIntent =
-                                    new Intent(this, AnalyticsActivity.class);
+                            Intent intent = new Intent(this,AnalyticsActivity.class);
+                            intent.putExtra("ownerId",vendorId);
 
-                            analyticsIntent.putExtra("ownerId", vendorId);
-
-                            startActivity(analyticsIntent);
-
+                            startActivity(intent);
                             break;
 
                         case "Payouts":
-                            startActivity(new Intent(this, PayoutsActivity.class));
+                            startActivity(new Intent(this,PayoutsActivity.class));
                             break;
                     }
+
                 });
 
         rvQuickActions.setAdapter(adapter);
     }
 
-    private void setupChartStyle() {
+    /* ============================================================
+       CHART STYLE
+    ============================================================ */
+
+    private void setupChartStyle(){
 
         barChart.getDescription().setEnabled(false);
         barChart.setDrawGridBackground(false);
 
         XAxis xAxis = barChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setDrawGridLines(false);
 
-        barChart.getAxisLeft().setDrawGridLines(false);
         barChart.getAxisRight().setEnabled(false);
-
         barChart.getLegend().setEnabled(false);
     }
 
-    private void loadDashboardData() {
+    /* ============================================================
+       LOAD DASHBOARD
+    ============================================================ */
+
+    private void loadDashboardData(){
 
         String vendorId = TokenManager.getInstance(this).getUserId();
 
-        if (vendorId == null) {
-            showError("User ID not found. Please login again.");
+        if(vendorId == null){
+            showError("User session expired");
             return;
         }
 
         dashboardViewModel.refreshStats(vendorId);
 
-        dashboardViewModel.getDashboardStats(vendorId).observe(this, resource -> {
+        dashboardViewModel.getDashboardStats(vendorId).observe(this,resource -> {
 
-            if (resource == null) return;
+            if(resource == null) return;
 
-            switch (resource.status) {
+            switch (resource.status){
 
                 case LOADING:
+
                     progressBar.setVisibility(View.VISIBLE);
                     swipeRefreshLayout.setRefreshing(true);
                     break;
@@ -172,45 +280,44 @@ public class DashboardActivity extends BaseActivity {
                     progressBar.setVisibility(View.GONE);
                     swipeRefreshLayout.setRefreshing(false);
 
-                    if (resource.data != null) {
+                    if(resource.data != null){
 
-                        Log.d("DASHBOARD_DEBUG", "Stats received");
-
-                        String messId = resource.data.getMessId();
-
-                        if (messId != null) {
-
-                            TokenManager
-                                    .getInstance(this)
-                                    .saveMessId(messId);
-
-                            Log.d("DASHBOARD_DEBUG", "Mess ID saved: " + messId);
-
-                        } else {
-
-                            Log.e("DASHBOARD_DEBUG", "Mess ID NULL from API");
-                        }
+                        TokenManager.getInstance(this)
+                                .saveMessId(resource.data.getMessId());
 
                         updateUI(resource.data);
+
                     }
 
                     break;
 
                 case ERROR:
+
                     progressBar.setVisibility(View.GONE);
                     swipeRefreshLayout.setRefreshing(false);
+
                     showError(resource.message);
                     break;
             }
+
         });
+
     }
 
-    private void updateUI(DashboardStats stats) {
+    /* ============================================================
+       UPDATE UI
+    ============================================================ */
 
-        /* ---------- TODAY DATA ---------- */
+    private void updateUI(DashboardStats stats){
+
+        tvRestaurantName.setText(stats.getMessName());
+
+        isRestaurantOpen = stats.isOpen();
+
+        updateRestaurantStatusUI();
 
         tvTotalRevenue.setText(
-                String.format(Locale.getDefault(), "₹%.2f", stats.getRevenueToday())
+                String.format(Locale.getDefault(),"₹%.2f",stats.getRevenueToday())
         );
 
         tvTotalOrders.setText(String.valueOf(stats.getOrdersToday()));
@@ -218,55 +325,114 @@ public class DashboardActivity extends BaseActivity {
         tvActiveCustomers.setText(String.valueOf(stats.getCustomersToday()));
 
         tvAverageRating.setText(
-                String.format(Locale.getDefault(), "%.1f", stats.getAvgRating())
+                String.format(Locale.getDefault(),"%.1f",stats.getAvgRating())
         );
 
-        /* ---------- WEEKLY CHART ---------- */
+        if(stats.getWeeklyOrders()!=null){
 
-        if (stats.getWeeklyOrders() != null) {
             setupChart(stats.getWeeklyOrders());
+
         }
+
     }
 
-    private void setupChart(List<Integer> weeklyOrders) {
+    /* ============================================================
+       WEEKLY CHART
+    ============================================================ */
 
-        if (weeklyOrders == null || weeklyOrders.isEmpty()) return;
+    private void setupChart(List<Integer> weeklyOrders){
+
+        if(weeklyOrders == null) return;
 
         List<BarEntry> entries = new ArrayList<>();
 
-        for (int i = 0; i < weeklyOrders.size(); i++) {
-            entries.add(new BarEntry(i, weeklyOrders.get(i)));
+        for(int i=0;i<weeklyOrders.size();i++){
+
+            entries.add(new BarEntry(i,weeklyOrders.get(i)));
+
         }
 
-        BarDataSet dataSet = new BarDataSet(entries, "Orders");
+        BarDataSet dataSet = new BarDataSet(entries,"");
 
-        dataSet.setColor(Color.parseColor("#6C2BD9"));
+        dataSet.setColor(Color.parseColor("#7B61FF"));
+        dataSet.setValueTextColor(Color.BLACK);
         dataSet.setValueTextSize(12f);
 
         BarData data = new BarData(dataSet);
-        data.setBarWidth(0.9f);
+
+        barChart.setData(data);
 
         String[] days = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 
-        barChart.setData(data);
-        barChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(days));
+        barChart.getXAxis()
+                .setValueFormatter(new IndexAxisValueFormatter(days));
+
+        barChart.animateY(800);
 
         barChart.invalidate();
+
     }
 
-    private void toggleRestaurantStatus() {
+    /* ============================================================
+       TOGGLE RESTAURANT
+    ============================================================ */
 
-        isRestaurantOpen = !isRestaurantOpen;
+    private void toggleRestaurantStatus(){
 
-        if (isRestaurantOpen) {
+        String messId = TokenManager.getInstance(this).getMessId();
+
+        dashboardViewModel.toggleRestaurant(messId)
+                .observe(this,resource -> {
+
+                    if(resource.status == Resource.Status.SUCCESS){
+
+                        ToggleResponse response = resource.data;
+
+                        if(response!=null){
+
+                            isRestaurantOpen = response.isOpen();
+
+                            updateRestaurantStatusUI();
+
+                        }
+
+                    }else if(resource.status == Resource.Status.ERROR){
+
+                        showError(resource.message);
+
+                    }
+
+                });
+
+    }
+
+    private void updateRestaurantStatusUI(){
+
+        if(isRestaurantOpen){
 
             tvRestaurantStatus.setText("Restaurant Open");
             tvRestaurantStatus.setTextColor(Color.parseColor("#4CAF50"));
+            btnToggleStatus.setText("Close");
 
-        } else {
+        }else{
 
             tvRestaurantStatus.setText("Restaurant Closed");
             tvRestaurantStatus.setTextColor(Color.RED);
+            btnToggleStatus.setText("Open");
+
         }
+
     }
+
+    /* ============================================================
+       CLEANUP
+    ============================================================ */
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        SocketManager.off("new_order");
+    }
+
 }

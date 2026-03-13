@@ -30,6 +30,7 @@ public class OrderDetailActivity extends AppCompatActivity {
     private Button btnAccept, btnReject;
     private Button btnPreparing;
     private Button btnReady;
+    private Button btnDelivered;
 
     private ProgressBar progressBar;
 
@@ -66,6 +67,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         btnReject = findViewById(R.id.btnReject);
         btnPreparing = findViewById(R.id.btnPreparing);
         btnReady = findViewById(R.id.btnReady);
+        btnDelivered = findViewById(R.id.btnDelivered);
 
         progressBar = findViewById(R.id.progressBar);
     }
@@ -95,7 +97,7 @@ public class OrderDetailActivity extends AppCompatActivity {
             tvOrderId.setText("Order #" + shortId);
         }
 
-        tvStatus.setText(order.getStatus());
+        updateStatusUI(order.getStatus());
 
         tvTotal.setText(
                 String.format(
@@ -108,6 +110,17 @@ public class OrderDetailActivity extends AppCompatActivity {
         buildItemsList(order.getItems());
 
         updateButtonsVisibility(order.getStatus());
+    }
+
+    /* =============================
+       UPDATE STATUS UI
+    ============================== */
+
+    private void updateStatusUI(String status){
+
+        if(status == null) status = "pending";
+
+        tvStatus.setText(status.toUpperCase());
     }
 
     /* =============================
@@ -147,6 +160,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         layoutPendingActions.setVisibility(LinearLayout.GONE);
         btnPreparing.setVisibility(Button.GONE);
         btnReady.setVisibility(Button.GONE);
+        btnDelivered.setVisibility(Button.GONE);
 
         if ("pending".equalsIgnoreCase(status)) {
 
@@ -159,22 +173,24 @@ public class OrderDetailActivity extends AppCompatActivity {
         } else if ("preparing".equalsIgnoreCase(status)) {
 
             btnReady.setVisibility(Button.VISIBLE);
+
+        } else if ("ready".equalsIgnoreCase(status)) {
+
+            btnDelivered.setVisibility(Button.VISIBLE);
         }
     }
 
     /* =============================
-       SETUP BUTTON ACTIONS
+       BUTTON ACTIONS
     ============================== */
 
     private void setupActions() {
 
         btnAccept.setOnClickListener(v -> acceptOrder());
-
         btnReject.setOnClickListener(v -> rejectOrder());
-
         btnPreparing.setOnClickListener(v -> startPreparing());
-
         btnReady.setOnClickListener(v -> markReady());
+        btnDelivered.setOnClickListener(v -> markDelivered());
     }
 
     /* =============================
@@ -191,6 +207,7 @@ public class OrderDetailActivity extends AppCompatActivity {
         btnReject.setEnabled(!loading);
         btnPreparing.setEnabled(!loading);
         btnReady.setEnabled(!loading);
+        btnDelivered.setEnabled(!loading);
     }
 
     /* =============================
@@ -209,8 +226,7 @@ public class OrderDetailActivity extends AppCompatActivity {
 
                 order.setStatus("accepted");
 
-                tvStatus.setText("accepted");
-
+                updateStatusUI("accepted");
                 updateButtonsVisibility("accepted");
 
                 Toast.makeText(this,"Order Accepted",Toast.LENGTH_SHORT).show();
@@ -261,8 +277,7 @@ public class OrderDetailActivity extends AppCompatActivity {
 
                 order.setStatus("preparing");
 
-                tvStatus.setText("preparing");
-
+                updateStatusUI("preparing");
                 updateButtonsVisibility("preparing");
 
                 Toast.makeText(this,"Cooking Started",Toast.LENGTH_SHORT).show();
@@ -288,7 +303,35 @@ public class OrderDetailActivity extends AppCompatActivity {
 
                 order.setStatus("ready");
 
+                updateStatusUI("ready");
+                updateButtonsVisibility("ready");
+
                 Toast.makeText(this,"Order Ready",Toast.LENGTH_SHORT).show();
+
+                setResult(RESULT_OK);
+            }
+        });
+    }
+
+    /* =============================
+       MARK ORDER DELIVERED
+    ============================== */
+
+    private void markDelivered() {
+
+        setLoading(true);
+
+        viewModel.deliveredOrder(order.getId()).observe(this, resource -> {
+
+            setLoading(false);
+
+            if (resource.status == Resource.Status.SUCCESS) {
+
+                order.setStatus("delivered");
+
+                updateStatusUI("delivered");
+
+                Toast.makeText(this,"Order Delivered",Toast.LENGTH_SHORT).show();
 
                 setResult(RESULT_OK);
 
