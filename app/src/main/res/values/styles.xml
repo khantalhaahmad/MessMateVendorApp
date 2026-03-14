@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- OTP INPUT BOX -->
     <style name="OtpBoxStyle">
         <item name="android:layout_width">40dp</item>
         <item name="android:layout_height">50dp</item>
@@ -9,8 +10,79 @@
         <item name="android:inputType">number</item>
         <item name="android:maxLength">1</item>
         <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
         <item name="android:textColor">#000000</item>
         <item name="android:background">@drawable/bg_input_zomato</item>
+    </style>
+
+
+    <!-- ORDER SCREEN TITLE -->
+    <style name="OrdersTitleText">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#111111</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+
+    <!-- SUBTITLE TEXT -->
+    <style name="OrdersSubtitleText">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">#777777</item>
+    </style>
+
+
+    <!-- TAB TEXT STYLE -->
+    <style name="TabTextStyle">
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+
+    <!-- ORDER CARD TITLE -->
+    <style name="OrderCardTitle">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#111111</item>
+    </style>
+
+
+    <!-- ORDER CARD ITEM TEXT -->
+    <style name="OrderItemText">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">#444444</item>
+    </style>
+
+
+    <!-- ORDER META TEXT (timer, distance) -->
+    <style name="OrderMetaText">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">#888888</item>
+    </style>
+
+
+    <!-- ACCEPT BUTTON STYLE -->
+    <style name="AcceptButtonStyle">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:backgroundTint">#22C55E</item>
+    </style>
+
+
+    <!-- REJECT BUTTON STYLE -->
+    <style name="RejectButtonStyle">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:backgroundTint">#EF4444</item>
+    </style>
+
+
+    <!-- READY BUTTON STYLE -->
+    <style name="ReadyButtonStyle">
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:backgroundTint">#3B82F6</item>
     </style>
 
 </resources>

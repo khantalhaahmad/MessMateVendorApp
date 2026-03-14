@@ -5,53 +5,98 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F7FB">
+    android:background="#F4F6FA">
 
     <!-- APP BAR -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:elevation="4dp">
+        android:background="@android:color/transparent"
+        android:elevation="0dp">
 
-        <LinearLayout
+        <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="8dp">
+            android:fitsSystemWindows="true"
+            app:contentScrim="@android:color/white"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
-            <!-- TITLE -->
-            <TextView
-                android:id="@+id/tvOrdersTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Orders"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="#000"/>
-
-            <!-- TAB LAYOUT -->
-            <com.google.android.material.tabs.TabLayout
-                android:id="@+id/tabLayout"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="20dp"
+                android:paddingBottom="10dp">
 
-                app:tabIndicatorColor="#6C2BD9"
-                app:tabIndicatorHeight="3dp"
+                <!-- HEADER ROW -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                app:tabTextColor="#777"
-                app:tabSelectedTextColor="#6C2BD9"
+                    <!-- TITLE -->
+                    <TextView
+                        android:id="@+id/tvOrdersTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Orders"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:textColor="#111"/>
 
-                app:tabMode="fixed"
-                app:tabGravity="fill"/>
+                    <!-- REFRESH BUTTON -->
+                    <ImageButton
+                        android:id="@+id/btnRefresh"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/bg_icon_button"
+                        android:src="@android:drawable/ic_popup_sync"
+                        android:tint="#6C2BD9"/>
+                </LinearLayout>
 
-        </LinearLayout>
+                <!-- SMALL SUBTITLE -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Manage incoming orders"
+                    android:textSize="13sp"
+                    android:textColor="#777"
+                    android:layout_marginTop="4dp"/>
+
+                <!-- TABS CARD -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="3dp"
+                    android:background="@android:color/white">
+
+                    <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tabLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        app:tabIndicator="@drawable/tab_indicator"
+                        app:tabIndicatorHeight="0dp"
+
+                        app:tabTextAppearance="@style/TabTextStyle"
+                        app:tabRippleColor="@android:color/transparent"
+
+                        app:tabMode="fixed"
+                        app:tabGravity="fill"/>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
+
 
     <!-- VIEWPAGER -->
     <androidx.viewpager2.widget.ViewPager2
