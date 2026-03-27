@@ -1,29 +1,43 @@
 package com.vendorpro.model;
 
+import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public class AnalyticsResponse {
 
+    @SerializedName("messId")
     private String messId;
 
+    @SerializedName("totalOrders")
     private int totalOrders;
 
+    @SerializedName("totalRevenue")
     private double totalRevenue;
 
+    @SerializedName("averageOrderValue")
     private double averageOrderValue;
 
+    @SerializedName("activeCustomers")
     private int activeCustomers;
 
+    @SerializedName("avgRating")
     private double avgRating;
 
+    // ✅ safer (future proof)
+    @SerializedName("weeklyOrders")
     private List<Integer> weeklyOrders;
 
-    private List<Integer> monthlyRevenue;
+    // 🔥 FIXED (MAIN ISSUE)
+    @SerializedName("monthlyRevenue")
+    private List<Double> monthlyRevenue;
 
+    @SerializedName("weeklyLabels")
     private List<String> weeklyLabels;
 
+    @SerializedName("monthlyLabels")
     private List<String> monthlyLabels;
 
+    @SerializedName("topItems")
     private List<TopItem> topItems;
 
     /* =========================
@@ -58,7 +72,7 @@ public class AnalyticsResponse {
         return weeklyOrders;
     }
 
-    public List<Integer> getMonthlyRevenue() {
+    public List<Double> getMonthlyRevenue() {   // 🔥 FIX
         return monthlyRevenue;
     }
 
@@ -106,7 +120,7 @@ public class AnalyticsResponse {
         this.weeklyOrders = weeklyOrders;
     }
 
-    public void setMonthlyRevenue(List<Integer> monthlyRevenue) {
+    public void setMonthlyRevenue(List<Double> monthlyRevenue) {  // 🔥 FIX
         this.monthlyRevenue = monthlyRevenue;
     }
 

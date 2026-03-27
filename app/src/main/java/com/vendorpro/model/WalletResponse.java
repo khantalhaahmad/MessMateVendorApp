@@ -5,9 +5,13 @@ public class WalletResponse {
     private boolean success;
     private double wallet;
     private double pending;
+    private double processing; // 🔥 NEW FIELD
     private double paid;
 
-    // Getters
+    /* ============================
+       GETTERS
+    ============================ */
+
     public boolean isSuccess() {
         return success;
     }
@@ -20,11 +24,18 @@ public class WalletResponse {
         return pending;
     }
 
+    public double getProcessing() {   // 🔥 NEW
+        return processing;
+    }
+
     public double getPaid() {
         return paid;
     }
 
-    // Setters (optional)
+    /* ============================
+       SETTERS (OPTIONAL)
+    ============================ */
+
     public void setSuccess(boolean success) {
         this.success = success;
     }
@@ -35,6 +46,10 @@ public class WalletResponse {
 
     public void setPending(double pending) {
         this.pending = pending;
+    }
+
+    public void setProcessing(double processing) { // 🔥 NEW
+        this.processing = processing;
     }
 
     public void setPaid(double paid) {

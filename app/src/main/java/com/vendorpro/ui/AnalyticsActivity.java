@@ -105,7 +105,13 @@ public class AnalyticsActivity extends BaseActivity {
             }
 
             if (data.getMonthlyRevenue() != null && !data.getMonthlyRevenue().isEmpty()) {
-                setRevenueChart(data.getMonthlyRevenue());
+                List<Integer> revenueInt = new ArrayList<>();
+
+                for (Double val : data.getMonthlyRevenue()) {
+                    revenueInt.add(val.intValue()); // convert here
+                }
+
+                setRevenueChart(revenueInt);
             }
 
             if (data.getTopItems() != null && !data.getTopItems().isEmpty()) {
